@@ -5,6 +5,7 @@ python:
 install: 
   - pip install requests
   - pip install beautifulsoup4
+  - pip install robobrowser
 # command to run tests, e.g. python setup.py test
 # script:  python main.py
 script:  python -m unittest test_main
