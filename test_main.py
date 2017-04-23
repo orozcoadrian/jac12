@@ -1,7 +1,7 @@
 import unittest
 from datetime import date
 
-from main import Foreclosures, MyDate, Jac
+from main import Foreclosures, MyDate, Jac, Taxes
 
 
 class MyTestCase(unittest.TestCase):
@@ -40,6 +40,17 @@ class MyTestCase(unittest.TestCase):
     def test_get_short_date_strings_to_add(self):
         self.assertEqual(Jac().get_short_date_strings_to_add([date(2017, 4, 26), date(2017, 5, 3)]),
                          ['04.26.17', '05.03.17'])
+
+    def test_taxes_request(self):
+        self.assertEqual(Taxes().get_tax_url_from_taxid('test_taxid'),
+                         'https://brevard.county-taxes.com/public/real_estate/parcels/test_taxid')
+
+    def test_taxes_response(self):
+        with open('taxes_resp.html', 'rb') as myfile:
+            ret = Taxes().get_info_from_response('test_taxid', myfile.read())
+            self.assertEqual(ret,
+                             {'url_to_use': 'https://brevard.county-taxes.com/public/real_estate/parcels/test_taxid',
+                              'value_to_use': '859.99'})
 
 
 if __name__ == '__main__':

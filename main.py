@@ -386,44 +386,19 @@ class Xl(object):
 
 
 class Taxes(object):
-    def __init__(self):
-        self.value_to_use = None
-        self.url_to_use = None
+    def get_info_from_account(self, bcpao_acc):
+        if len(bcpao_acc) > 0:
+            url = self.get_tax_url_from_taxid(bcpao_acc)
+            r = requests.post(url, data='', headers='', stream=True)
+            return self.get_info_from_response(bcpao_acc, r.content)
 
-    @staticmethod
-    def get_name():
-        return 'Taxes'
-
-    def fetch(self, bcpao_acc_):
-        the_str = None
-        if bcpao_acc_ is not None and len(bcpao_acc_) > 0:
-            the_str = bcpao_acc_
-        if the_str is None:
-            self.value_to_use = None  # Cell.from_display('')
-        else:
-            display_str = self.get_pay_all_from_taxid(the_str)
-            if display_str:
-                display_str = display_str.replace('$', '').replace(',', '')
-                self.value_to_use = display_str
-                self.url_to_use = self.get_tax_url_from_taxid(the_str)
-
-                # mr['taxes_value'] = value_to_use
-                # mr['taxes_url'] = url_to_use
-
-    def get_pay_all_from_taxid(self, tax_id):
-        ret = '0'
-        r = self.get_tax_text_from_taxid(tax_id)
-        pay_all = self.get_pay_all_from_tax_text(r.text)
-        if pay_all:
-            ret = pay_all
-        return ret
-
-    def get_tax_text_from_taxid(self, tax_id):
-        url = self.get_tax_url_from_taxid(tax_id)
-        headers = ''  # get_headers(cfid, cftoken)
-        data = ''  # get_data(year, court_type, seq_number)
-        r = requests.post(url, data, headers=headers, stream=True)
-        return r
+    def get_info_from_response(self, tax_id, resp):
+        if resp is not None:
+            pay_all = self.get_amount_unpaid_from_tax_text(resp)
+            if pay_all:
+                display_str = pay_all.replace('$', '').replace(',', '')
+                ret = {'value_to_use': display_str, 'url_to_use': self.get_tax_url_from_taxid(tax_id)}
+                return ret
 
     @staticmethod
     def get_tax_url_from_taxid(tax_id):
@@ -431,12 +406,16 @@ class Taxes(object):
         return url
 
     @staticmethod
-    def get_pay_all_from_tax_text(r_text):
-        ret = None
-        m = re.search('.*Pay All: \$([\d,.]*).*', r_text)
-        if m:
-            ret = m.group(1)
-        return ret
+    def get_amount_unpaid_from_tax_text(r_text):
+        if r_text is not None:
+            soup = BeautifulSoup(r_text.decode('utf-8'), "html.parser")
+            amt_unpaid_elem = soup.find('div', class_=re.compile('amount unpaid.*'))
+            if amt_unpaid_elem is not None:
+                m = re.search('.*\$([\d,.]*) due.*', amt_unpaid_elem.text)
+                if m:
+                    return m.group(1)
+                else:
+                    return '0'
 
 
 class Bcpao(object):
@@ -966,9 +945,10 @@ class Jac(object):
             r['bcpao_accs'] = bcpao.bcpao_accs
 
             taxes = Taxes()
-            taxes.fetch(r['bcpao_acc'])
-            r['taxes_value'] = taxes.value_to_use
-            r['taxes_url'] = taxes.url_to_use
+            taxes_info = taxes.get_info_from_account(r['bcpao_acc'])
+            if taxes_info is not None:
+                r['taxes_value'] = taxes_info['value_to_use']
+                r['taxes_url'] = taxes_info['url_to_use']
 
             # if i == 0:  # temp hack
             #     break
