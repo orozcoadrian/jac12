@@ -1,31 +1,28 @@
 import argparse
-from datetime import datetime, date, timedelta
 import email
+import itertools
 import json
 import locale
 import logging
 import os
 import pprint
-
-import itertools
-
 import re
+import shutil
 import smtplib
+import sys
+import time
 import urllib.parse
 import zipfile
-
-import shutil
+from datetime import datetime, date, timedelta
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 
+import requests
+from bs4 import BeautifulSoup
 from robobrowser import RoboBrowser
 from xlwt import Workbook, easyxf, Formula
-from bs4 import BeautifulSoup
-import time
-import requests
-import sys
 
 
 class FilterCancelled(object):
@@ -447,10 +444,6 @@ class Bcpao(object):
         self.bcpao_acc = None
         self.bcpao_item = None
         self.bcpao_accs = None
-
-    @staticmethod
-    def get_name():
-        return 'Bcpao'
 
     def fetch(self, legal, legals):
         self.fill_bcpao_from_legal(legal, legals)
