@@ -1,7 +1,7 @@
 import unittest
 from datetime import date
 
-from main import Foreclosures, MyDate, Jac, Taxes
+from main import Foreclosures, MyDate, Jac, Taxes, Bcpao
 
 
 class MyTestCase(unittest.TestCase):
@@ -51,6 +51,22 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(ret,
                              {'url_to_use': 'https://brevard.county-taxes.com/public/real_estate/parcels/test_taxid',
                               'value_to_use': '859.99'})
+
+    def test_bcpao_get_acct_by_legal(self):
+        ret = Bcpao().get_acct_by_legal_request((' WYNDHAM AT DURAN', '3', 'A', '53', '20', '09', '26', '36', 'UH'))
+        self.assertEqual(ret, 'https://bcpao.us/api/v1/search?'
+                              'lot=3&blk=A&platbook=53&platpage=20&'
+                              'subname=%20WYNDHAM%20AT%20DURAN&activeonly=true&size=10&page=1')
+
+    def test_bcpao_parse_acct_by_legal_response(self):
+        with open('bcpao_resp.json', 'r') as myfile:
+            class TestObject(object):
+                def __init__(self, status_code, text):
+                    self.status_code = status_code
+                    self.text = text
+
+            ret = Bcpao().parse_acct_by_legal_response(TestObject(status_code=200, text=myfile.read()))
+            self.assertEqual(ret, '2627712')
 
 
 if __name__ == '__main__':

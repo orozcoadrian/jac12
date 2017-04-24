@@ -407,25 +407,19 @@ class Taxes(object):
 
     @staticmethod
     def get_amount_unpaid_from_tax_text(r_text):
+        ret = None
         if r_text is not None:
+            ret = '0'
             soup = BeautifulSoup(r_text.decode('utf-8'), "html.parser")
             amt_unpaid_elem = soup.find('div', class_=re.compile('amount unpaid.*'))
             if amt_unpaid_elem is not None:
                 m = re.search('.*\$([\d,.]*) due.*', amt_unpaid_elem.text)
                 if m:
-                    return m.group(1)
-                else:
-                    return '0'
+                    ret = m.group(1)
+        return ret
 
 
 class Bcpao(object):
-    def __init__(self) -> None:
-        self.bcpao_acc = None
-        self.bcpao_item = None
-        self.bcpao_accs = None
-
-    def fetch(self, legal, legals):
-        self.fill_bcpao_from_legal(legal, legals)
 
     @staticmethod
     def get_parcel_data_by_acct2(acct):
@@ -484,26 +478,29 @@ class Bcpao(object):
 
         return ret
 
-    def fill_bcpao_from_legal(self, legal, legals):
+    def get_bcpao_from_legal(self, legal, legals):
+        print(legal)
+        ret = dict(bcpao_acc=None, bcpao_accs=[], bcpao_item=None)
         if 'subd' in legal:
             acc = self.get_acct_by_legal(
                 (legal['subd'], legal['lt'], legal['blk'], legal['pb'], legal['pg'], legal['s'],
                  legal['t'], legal['r'], legal['subid']))
-            self.bcpao_acc = acc
-            self.bcpao_item = self.get_bcpaco_item(acc)
-        self.bcpao_accs = []
-        for i, l in enumerate(legals):
-            self.bcpao_acc = None
-            if 't' in l:
-                acc = self.get_acct_by_legal(
-                    (l['subd'], l['lt'], l['blk'], l['pb'], l['pg'], l['s'], l['t'], l['r'], l['subid']))
-                self.bcpao_accs.append(acc)
-                if self.bcpao_acc is None:
-                    self.bcpao_acc = acc
-                    self.bcpao_item = self.get_bcpaco_item(acc)
+            if acc is not None:
+                ret['bcpao_acc'] = acc
+                ret['bcpao_item'] = self.get_bcpaco_item(acc)
+            else:
+                for i, l in enumerate(legals):
+                    if 't' in l:
+                        acc = self.get_acct_by_legal(
+                            (l['subd'], l['lt'], l['blk'], l['pb'], l['pg'], l['s'], l['t'], l['r'], l['subid']))
+                        if acc is not None:
+                            ret['bcpao_item'] = self.get_bcpaco_item(acc)
+                            break
+        return ret
 
     @staticmethod
-    def get_acct_by_legal(legal):
+    def get_acct_by_legal_request(legal):
+        print(legal)
         use_local_logging_config = False
         if use_local_logging_config:
             logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
@@ -529,19 +526,25 @@ class Bcpao(object):
             url2 += '&subname=' + urllib.parse.quote(sub)
             url2 += '&activeonly=true&size=10&page=1'
 
-            headers = {'Accept': 'application/json'}
+            return url2
 
-            req = requests.get(url2, headers=headers, verify=False, timeout=10)  # timeout in seconds
+    def get_acct_by_legal(self, legal):
+        url2 = self.get_acct_by_legal_request(legal)
 
-            if req.status_code == 200 and len(req.text) > 0:
-                loaded_json = json.loads(req.text)  # use req.json() instead?
-                if loaded_json and len(loaded_json) == 1:
-                    ret = loaded_json[0]['account']
+        headers = {'Accept': 'application/json'}
 
-        if not ret:
-            print('no bcpao acct, no address')
+        resp = requests.get(url2, headers=headers, verify=False, timeout=10)  # timeout in seconds
 
-        return ret
+        if resp.status_code == 200:
+            print(resp.content)
+        return self.parse_acct_by_legal_response(resp)
+
+    @staticmethod
+    def parse_acct_by_legal_response(resp):
+        if resp.status_code == 200 and len(resp.text) > 0:
+            loaded_json = json.loads(resp.text)  # use req.json() instead?
+            if loaded_json and len(loaded_json) == 1:
+                return loaded_json[0]['account']
 
     @staticmethod
     def get_bcpao_query_url_by_acct(acct):
@@ -659,27 +662,30 @@ class BclerkPublicRecords(object):
         print('get_legal_by_case("' + case + '")')
         ret = {}
         rows = self.get_records_grid_for_case_number(case)
-        lds = []
+        lds = set()
         for row in rows:
             if row['First Legal'] and len(row['First Legal']) > 0:
-                lds.append(row['First Legal'])
+                lds.add(row['First Legal'])
         ret['legal_description'] = '; '.join(lds).strip()
-        if len(lds) > 0:
-            ret['oncoreweb_by_legal_url'] = self.oncoreweb_by_legal(lds[0])
-            print(ret['oncoreweb_by_legal_url'])
-        for i, ld in enumerate(lds):
+        # if len(lds) > 0:
+        #     ret['oncoreweb_by_legal_url'] = self.oncoreweb_by_legal(lds[0])
+        #     print(ret['oncoreweb_by_legal_url'])
+        ret['oncoreweb_by_legal_urls'] = []
+        for ld in lds:
+            legal00 = self.oncoreweb_by_legal(ld)
             legal_desc = ld.strip()
             temp = self.get_legal_from_str(legal_desc)
             if temp:
-                ret = dict(itertools.chain(ret.items(), temp.items()))
-                if i < (len(lds) - 1):
-                    the_str = 'choosing a legal description (index='
-                    the_str += str(i)
-                    the_str += ':' + legal_desc
-                    the_str += ') before going through all of them(total='
-                    the_str += str(len(lds))
-                    the_str += '): '
-                break
+                temp = dict(itertools.chain(temp.items()))
+                # if i < (len(lds) - 1):
+                #     the_str = 'choosing a legal description (index='
+                #     the_str += str(i)
+                #     the_str += ':' + legal_desc
+                #     the_str += ') before going through all of them(total='
+                #     the_str += str(len(lds))
+                #     the_str += '): '
+                # break
+            ret['oncoreweb_by_legal_urls'].append((legal00, temp))
         return ret
 
     def get_legals_by_case(self, case):
@@ -687,11 +693,11 @@ class BclerkPublicRecords(object):
         rets = []
 
         rows = self.get_records_grid_for_case_number(case)
-        lds = []
+        lds = set()
         for row in rows:
             if row['First Legal'] and len(row['First Legal']) > 0:
-                lds.append(row['First Legal'])
-        for i, ld in enumerate(lds):
+                lds.add(row['First Legal'])
+        for ld in lds:
             legal_desc = ld.strip()
             temp = self.get_legal_from_str(legal_desc)
             if temp:
@@ -699,11 +705,16 @@ class BclerkPublicRecords(object):
         return rets
 
     def fetch(self, case_number_):
-        self.legal = self.get_legal_by_case(case_number_)
+        # self.legal = self.get_legal_by_case(case_number_)
         # print('legal: ' + str(legal))
         # mr['legal'] = legal
+        self.legal = None
         self.legals = self.get_legals_by_case(case_number_)
-        # mr['legals'] = legals
+        if len(self.legals) >= 1:
+            self.legal = self.legals.pop(0)
+        elif len(self.legals) == 1:
+            self.legal = self.legals[0]
+            # mr['legals'] = legals
 
     @staticmethod
     def get_name_combos(i):
@@ -939,10 +950,15 @@ class Jac(object):
             r['legals'] = bclerk_public_records.legals
 
             bcpao = Bcpao()
-            bcpao.fetch(r['legal'], r['legals'])
-            r['bcpao_acc'] = bcpao.bcpao_acc
-            r['bcpao_item'] = bcpao.bcpao_item
-            r['bcpao_accs'] = bcpao.bcpao_accs
+            bcpao_info = bcpao.get_bcpao_from_legal(r['legal'], r['legals'])
+            r['bcpao_acc'] = bcpao_info['bcpao_acc']
+            r['bcpao_item'] = bcpao_info['bcpao_item']
+            r['bcpao_accs'] = bcpao_info['bcpao_accs']
+
+            if r['bcpao_acc'] is None:
+                r['bcpao_acc'] = ''
+            if r['bcpao_item'] is None:
+                r['bcpao_item'] = {}
 
             taxes = Taxes()
             taxes_info = taxes.get_info_from_account(r['bcpao_acc'])
@@ -950,8 +966,8 @@ class Jac(object):
                 r['taxes_value'] = taxes_info['value_to_use']
                 r['taxes_url'] = taxes_info['url_to_use']
 
-            # if i == 0:  # temp hack
-            #     break
+                # if i == 0:  # temp hack
+                #     break
 
         logging.info('fetch complete')
         logging.info('num records: ' + str(len(mrs)))
