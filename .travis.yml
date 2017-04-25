@@ -2,6 +2,11 @@ language: python
 python:
   - "3.5"
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+before_install:
+  # due to locale error when reading bcpao_resp2.json
+  # https://docs.travis-ci.com/user/common-build-problems/#System%3A-Required-language-pack-isn%E2%80%99t-installed
+  - locale -a
+  - sudo apt-get update && sudo apt-get --reinstall install -qq language-pack-en
 install: 
   - pip install requests
   - pip install beautifulsoup4
