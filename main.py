@@ -461,7 +461,7 @@ class Bcpao(object):
                 'valueSummary'] is not None and len(parsed_json['valueSummary']) > 0 and 'marketVal' in \
                     parsed_json['valueSummary'][0]:
                 val_ = parsed_json['valueSummary'][0]['marketVal']
-                locale.setlocale(locale.LC_ALL, 'en_US')
+                locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
                 lmvt_str = locale.currency(val_, grouping=True)
             ret['latest market value total'] = lmvt_str
             pprint.pprint(ret)
