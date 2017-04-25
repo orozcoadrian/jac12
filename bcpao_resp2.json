@@ -1,0 +1,387 @@
+{
+  "lastModifiedDate": "4/24/2017 3:35:00 AM",
+  "account": "2627712",
+  "nextAccount": 2627713,
+  "prevAccount": 2627711,
+  "parcelID": "26-36-09-UH-A-3",
+  "parcelTownship": "26",
+  "parcelRange": "36",
+  "parcelSection": "09",
+  "parcelSubdivision": "UH",
+  "parcelBlock": "A",
+  "parcelLot": "3",
+  "siteAddress": "2778 WYNDHAM WAY MELBOURNE FL 32940",
+  "subdivisionName": "WYNDHAM AT DURAN",
+  "owner": "SUPPORT 100 PROPERTY MGMT LLC TR",
+  "photoUrl": "https://www.bcpao.us/photos/26/2627712011.jpg",
+  "sketchUrl": "",
+  "platBook": null,
+  "platPage": null,
+  "platBookPage": "0053/0020",
+  "legalDescription": "WYNDHAM AT DURAN LOT 3  BLK A",
+  "acreage": 0.36,
+  "totalBuildings": 1,
+  "mailFormatted1": "SUPPORT 100 PROPERTY MGMT LLC TR",
+  "mailFormatted2": "2778 WYNDHAM WAY",
+  "mailFormatted3": "MELBOURNE FL 32940",
+  "mailFormatted4": null,
+  "mailFormatted5": null,
+  "mailingAddress": {
+    "addr1": "2778 WYNDHAM WAY",
+    "addr2": "",
+    "city": "MELBOURNE",
+    "state": "FL",
+    "zip": "32940",
+    "country": "",
+    "formatted": "2778 WYNDHAM WAY MELBOURNE FL  32940",
+    "isForeign": false
+  },
+  "propertyUse": {
+    "code": "0110",
+    "description": "SINGLE FAMILY RESIDENCE"
+  },
+  "siteCode": {
+    "code": "0210",
+    "description": "GOLF COURSE FRONTAGE"
+  },
+  "millage": {
+    "code": "4200",
+    "description": "UNINCORP DISTRICT 4"
+  },
+  "marketArea": {
+    "code": "093096",
+    "description": null
+  },
+  "redevelopmentZone": null,
+  "ownerNames": [
+    {
+      "ownerName": "SUPPORT 100 PROPERTY MGMT LLC TR",
+      "ownerSequence": "1",
+      "primaryOwner": true
+    }
+  ],
+  "siteAddresses": [
+    {
+      "siteAddress": "2778 WYNDHAM WAY MELBOURNE FL 32940",
+      "locationSequence": "1",
+      "isPrimaryFlag": true
+    }
+  ],
+  "exemptions": [
+    {
+      "code": "HEX1",
+      "description": "HOMESTEAD FIRST $25,000"
+    },
+    {
+      "code": "HEX2",
+      "description": "HOMESTEAD ADDITIONAL $25,000"
+    }
+  ],
+  "valueSummary": [
+    {
+      "sequence": null,
+      "rollYear": null,
+      "marketVal": 943700.0,
+      "agriculturalVal": 0.0,
+      "assessedValSch": 859760.0,
+      "assessedVal": 859760.0,
+      "homesteadEx": 25000.0,
+      "addlHomesteadEx": 25000.0,
+      "otherExempts": null,
+      "taxableValSch": 834760.0,
+      "taxableVal": 809760.0,
+      "marketVal1": 863140.0,
+      "agriculturalVal1": 0.0,
+      "assessedValSch1": 853790.0,
+      "assessedVal1": 853790.0,
+      "homesteadEx1": 25000.0,
+      "addlHomesteadEx1": 25000.0,
+      "otherExempts1": null,
+      "taxableValSch1": 828790.0,
+      "taxableVal1": 803790.0,
+      "marketVal2": 847020.0,
+      "agriculturalVal2": 0.0,
+      "assessedValSch2": 847020.0,
+      "assessedVal2": 847020.0,
+      "homesteadEx2": 25000.0,
+      "addlHomesteadEx2": 25000.0,
+      "otherExempts2": null,
+      "taxableValSch2": 822020.0,
+      "taxableVal2": 797020.0
+    }
+  ],
+  "salesHistory": [
+    {
+      "book": "7035",
+      "page": "2602",
+      "salePrice": 100.0,
+      "saleDate": "2013-12-20T00:00:00",
+      "deedCode": "WD",
+      "deedDesc": "WARRANTY DEED/SPECIAL WARRANTY DEED",
+      "saleQual": "11",
+      "saleQualDesc": "QC,TRANSFER W/MIN OR NO DOC STAMPS,CORRECTIVE,CT,XD,TD,FJ,DC",
+      "screeningSource": null,
+      "phyChgCode": null,
+      "qualified": false,
+      "vacantOrImproved": false,
+      "isConfidential": false,
+      "noData": false
+    },
+    {
+      "book": "6115",
+      "page": "0749",
+      "salePrice": 100.0,
+      "saleDate": "2009-12-30T00:00:00",
+      "deedCode": "TD",
+      "deedDesc": "TRUSTEE DEED",
+      "saleQual": "11",
+      "saleQualDesc": "QC,TRANSFER W/MIN OR NO DOC STAMPS,CORRECTIVE,CT,XD,TD,FJ,DC",
+      "screeningSource": null,
+      "phyChgCode": null,
+      "qualified": false,
+      "vacantOrImproved": false,
+      "isConfidential": false,
+      "noData": false
+    },
+    {
+      "book": "5857",
+      "page": "4887",
+      "salePrice": 100.0,
+      "saleDate": "2008-04-14T00:00:00",
+      "deedCode": "TD",
+      "deedDesc": "TRUSTEE DEED",
+      "saleQual": "",
+      "saleQualDesc": "",
+      "screeningSource": null,
+      "phyChgCode": null,
+      "qualified": false,
+      "vacantOrImproved": false,
+      "isConfidential": false,
+      "noData": false
+    },
+    {
+      "book": "5854",
+      "page": "8521",
+      "salePrice": 100.0,
+      "saleDate": "2008-04-02T00:00:00",
+      "deedCode": "TD",
+      "deedDesc": "TRUSTEE DEED",
+      "saleQual": "",
+      "saleQualDesc": "",
+      "screeningSource": null,
+      "phyChgCode": null,
+      "qualified": false,
+      "vacantOrImproved": false,
+      "isConfidential": false,
+      "noData": false
+    },
+    {
+      "book": "5599",
+      "page": "7699",
+      "salePrice": 100.0,
+      "saleDate": "2006-02-02T00:00:00",
+      "deedCode": "WD",
+      "deedDesc": "WARRANTY DEED/SPECIAL WARRANTY DEED",
+      "saleQual": "",
+      "saleQualDesc": "",
+      "screeningSource": null,
+      "phyChgCode": null,
+      "qualified": false,
+      "vacantOrImproved": true,
+      "isConfidential": false,
+      "noData": false
+    },
+    {
+      "book": "5581",
+      "page": "3168",
+      "salePrice": 170000.0,
+      "saleDate": "2005-11-30T00:00:00",
+      "deedCode": "WD",
+      "deedDesc": "WARRANTY DEED/SPECIAL WARRANTY DEED",
+      "saleQual": "",
+      "saleQualDesc": "",
+      "screeningSource": null,
+      "phyChgCode": null,
+      "qualified": true,
+      "vacantOrImproved": true,
+      "isConfidential": false,
+      "noData": false
+    },
+    {
+      "book": "5576",
+      "page": "6987",
+      "salePrice": 170000.0,
+      "saleDate": "2005-11-30T00:00:00",
+      "deedCode": "WD",
+      "deedDesc": "WARRANTY DEED/SPECIAL WARRANTY DEED",
+      "saleQual": "",
+      "saleQualDesc": "",
+      "screeningSource": null,
+      "phyChgCode": null,
+      "qualified": true,
+      "vacantOrImproved": true,
+      "isConfidential": false,
+      "noData": false
+    }
+  ],
+  "landInfo": [
+    {
+      "acreage": "0.36",
+      "legalDesc": "WYNDHAM AT DURAN LOT 3  BLK A",
+      "platBookPage": "0053/0020",
+      "subdivisionName": "WYNDHAM AT DURAN",
+      "siteCode": {
+        "code": "0210",
+        "description": "GOLF COURSE FRONTAGE"
+      }
+    }
+  ],
+  "addlXFeatures": [],
+  "buildings": [
+    {
+      "account": 2627712,
+      "bldgSequence": 1,
+      "bldgUse": {
+        "code": "0110",
+        "description": "SINGLE FAMILY RESIDENCE"
+      },
+      "yearBuilt": 2007,
+      "storyHeight": "10",
+      "floors": "02",
+      "avgCeilingHeight": "10",
+      "residentialUnits": 1,
+      "commericalUnits": 0,
+      "photo": null,
+      "sketch": null,
+      "totalBaseArea": 4441,
+      "totalSubArea": 7202,
+      "subAreaInfo": [
+        {
+          "bldgSequence": 1,
+          "description": "BALCONY",
+          "grossSqFtArea": 60,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "BASE AREA (1st)",
+          "grossSqFtArea": 3142,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "BASE AREA (2nd)",
+          "grossSqFtArea": 1299,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "GARAGE",
+          "grossSqFtArea": 594,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "GARAGE",
+          "grossSqFtArea": 662,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "OPEN PORCH",
+          "grossSqFtArea": 60,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "OPEN PORCH",
+          "grossSqFtArea": 137,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "OPEN PORCH",
+          "grossSqFtArea": 145,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "OPEN PORCH",
+          "grossSqFtArea": 503,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "OPEN PORCH",
+          "grossSqFtArea": 582,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "UTILITY ROOM",
+          "grossSqFtArea": 18,
+          "noData": false
+        }
+      ],
+      "extraFeatureInfo": [
+        {
+          "bldgSequence": 1,
+          "description": "SUMMER KITCHEN - GOOD QUALITY",
+          "units": 1,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "POOL: RESIDENTIAL",
+          "units": 1,
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "description": "POOL DECK",
+          "units": 1382,
+          "noData": false
+        }
+      ],
+      "constructionInfo": [
+        {
+          "bldgSequence": 1,
+          "element": "EXTERIOR WALL:",
+          "code": "EXTERIOR WALL",
+          "description": "STUCCO",
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "element": "FRAME:",
+          "code": "FRAME",
+          "description": "MASNRYCONC                                        , WOOD FRAME",
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "element": "ROOF:",
+          "code": "ROOF",
+          "description": "CEM/CLY/MTL TILE",
+          "noData": false
+        },
+        {
+          "bldgSequence": 1,
+          "element": "ROOF STRUCTURE:",
+          "code": "ROOF STRUCTURE",
+          "description": "HIP/GABLE",
+          "noData": false
+        }
+      ],
+      "noData": false
+    }
+  ],
+  "condoInfo": null,
+  "tangibleInfo": null,
+  "isCondo": false,
+  "condoNumber": 0,
+  "condoFirstAccount": null,
+  "isConfidential": false,
+  "noData": false,
+  "isInactive": false
+}

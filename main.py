@@ -420,123 +420,107 @@ class Taxes(object):
 
 
 class Bcpao(object):
-
     @staticmethod
-    def get_parcel_data_by_acct2(acct):
-        print('get_parcelData_by_acct(' + str(acct) + ')')
-        url = 'https://bcpao.us/api/v1/account/' + str(acct) + ''
-        headers = {'Accept': 'application/json'}
-        r = requests.get(url, headers=headers)
-        return r.text
-
-    def get_bcpaco_item(self, acct):
-        print("get_bcpaco_item('" + acct + "')")
-        # don't do anything if acct is blank (same in bcpao_radius
-        ret = {}
-        if acct is None or len(acct) == 0:
-            return ret
-        parcel_data = self.get_parcel_data_by_acct2(acct)
-        parsed_json = json.loads(parcel_data)
-        if 'Multiple Addresses' in parsed_json['siteAddress'] and len(parsed_json['siteAddresses']) > 0:
-            addr_str = parsed_json['siteAddresses'][0]['siteAddress']
-        else:
-            addr_str = parsed_json['siteAddress']
-        print('"' + addr_str + '"')
-        ret['address'] = addr_str  # .replace('\\r\\n','').strip()
-        ret['zip_code'] = ret['address'][-5:]
-        fc = ''
-        if parsed_json is not None and 'buildings' in parsed_json and parsed_json['buildings'] is not None and len(
-                parsed_json['buildings']) > 0 and 'constructionInfo' in parsed_json['buildings'][0]:
-            for bseq in parsed_json['buildings'][0]['constructionInfo']:
-                if 'code' in bseq and 'FRAME' in bseq['code']:
-                    fc = bseq['description']
-                    break
-        ret['frame code'] = re.sub(' +', ' ', fc).replace(' ,', ',')
-
-        yb_str = ''
-        if parsed_json is not None and 'buildings' in parsed_json and parsed_json['buildings'] is not None and len(
-                parsed_json['buildings']) > 0 and 'yearBuilt' in parsed_json['buildings'][0]:
-            yb_str = str(parsed_json['buildings'][0]['yearBuilt'])
-        ret['year built'] = yb_str
-
-        tba_str = ''
-        if parsed_json is not None and 'buildings' in parsed_json and parsed_json['buildings'] is not None and len(
-                parsed_json['buildings']) > 0 and 'totalBaseArea' in parsed_json['buildings'][0]:
-            tba_str = str(parsed_json['buildings'][0]['totalBaseArea'])
-        ret['total base area'] = tba_str
-
-        lmvt_str = ''
-        if parsed_json is not None and 'valueSummary' in parsed_json and parsed_json[
-            'valueSummary'] is not None and len(parsed_json['valueSummary']) > 0 and 'marketVal' in \
-                parsed_json['valueSummary'][0]:
-            val_ = parsed_json['valueSummary'][0]['marketVal']
-            locale.setlocale(locale.LC_ALL, 'en_US')
-            lmvt_str = locale.currency(val_, grouping=True)
-        ret['latest market value total'] = lmvt_str
-
-        pprint.pprint(ret)
-
+    def get_parcel_data_by_acct2_request(acct):
+        ret = {'url': 'https://bcpao.us/api/v1/account/' + str(acct),
+               'headers': {'Accept': 'application/json'}}
         return ret
 
-    def get_bcpao_from_legal(self, legal, legals):
+    @staticmethod
+    def parse_bcpaco_item_response(resp):
+        ret = {}
+        if resp.status_code == 200:
+            parsed_json = json.loads(resp.text)
+            if 'Multiple Addresses' in parsed_json['siteAddress'] and len(parsed_json['siteAddresses']) > 0:
+                addr_str = parsed_json['siteAddresses'][0]['siteAddress']
+            else:
+                addr_str = parsed_json['siteAddress']
+            print('"' + addr_str + '"')
+            ret['address'] = addr_str  # .replace('\\r\\n','').strip()
+            ret['zip_code'] = ret['address'][-5:]
+            fc = ''
+            if parsed_json is not None and 'buildings' in parsed_json and parsed_json['buildings'] is not None and len(
+                    parsed_json['buildings']) > 0 and 'constructionInfo' in parsed_json['buildings'][0]:
+                for bseq in parsed_json['buildings'][0]['constructionInfo']:
+                    if 'code' in bseq and 'FRAME' in bseq['code']:
+                        fc = bseq['description']
+                        break
+            ret['frame code'] = re.sub(' +', ' ', fc).replace(' ,', ',')
+            yb_str = ''
+            if parsed_json is not None and 'buildings' in parsed_json and parsed_json['buildings'] is not None and len(
+                    parsed_json['buildings']) > 0 and 'yearBuilt' in parsed_json['buildings'][0]:
+                yb_str = str(parsed_json['buildings'][0]['yearBuilt'])
+            ret['year built'] = yb_str
+            tba_str = ''
+            if parsed_json is not None and 'buildings' in parsed_json and parsed_json['buildings'] is not None and len(
+                    parsed_json['buildings']) > 0 and 'totalBaseArea' in parsed_json['buildings'][0]:
+                tba_str = str(parsed_json['buildings'][0]['totalBaseArea'])
+            ret['total base area'] = tba_str
+            lmvt_str = ''
+            if parsed_json is not None and 'valueSummary' in parsed_json and parsed_json[
+                'valueSummary'] is not None and len(parsed_json['valueSummary']) > 0 and 'marketVal' in \
+                    parsed_json['valueSummary'][0]:
+                val_ = parsed_json['valueSummary'][0]['marketVal']
+                locale.setlocale(locale.LC_ALL, 'en_US')
+                lmvt_str = locale.currency(val_, grouping=True)
+            ret['latest market value total'] = lmvt_str
+            pprint.pprint(ret)
+            return ret
+
+    def get_bcpao_acc_from_legal(self, legal, legals):
         print(legal)
         ret = dict(bcpao_acc=None, bcpao_accs=[], bcpao_item=None)
-        if 'subd' in legal:
-            acc = self.get_acct_by_legal(
-                (legal['subd'], legal['lt'], legal['blk'], legal['pb'], legal['pg'], legal['s'],
-                 legal['t'], legal['r'], legal['subid']))
+        legals2 = [legal]
+        legals2.extend(legals)
+        for l in legals2:
+            acc = self.get_acct_by_legal(l)
             if acc is not None:
                 ret['bcpao_acc'] = acc
-                ret['bcpao_item'] = self.get_bcpaco_item(acc)
-            else:
-                for i, l in enumerate(legals):
-                    if 't' in l:
-                        acc = self.get_acct_by_legal(
-                            (l['subd'], l['lt'], l['blk'], l['pb'], l['pg'], l['s'], l['t'], l['r'], l['subid']))
-                        if acc is not None:
-                            ret['bcpao_item'] = self.get_bcpaco_item(acc)
-                            break
+                break
         return ret
 
+    def get_bcpao_item_from_acc(self, acct):
+        print("get_bcpaco_item('" + acct + "')")
+        req = self.get_parcel_data_by_acct2_request(acct)
+        r = requests.get(req['url'], headers=req['headers'])
+        return self.parse_bcpaco_item_response(r)
+
     @staticmethod
-    def get_acct_by_legal_request(legal):
-        print(legal)
-        use_local_logging_config = False
-        if use_local_logging_config:
-            logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
-            logger = logging.getLogger(__name__)
-            logger.info('START')
-        sub, lot, block, pb, pg, s, t, r, subid = legal
-        sub = sub.replace(u'\xc2', u'').encode('utf-8')
-        logging.info(
-            'get_acct_by_legal(sub="' + str(sub) + '", lot=' + str(lot) + ', block=' + str(block) + ', pb=' + str(
-                pb) + ', pg=' + str(pg) + ', s=' + str(s) + ', t=' + str(t) + ', r=' + str(r) + ', subid=' + str(
-                subid) + ')')
-        ret = ''
-        if not ret:
-            url2 = 'https://bcpao.us/api/v1/search?'
-            if lot is not None:
-                url2 += 'lot=' + str(lot)
-            if block is not None:
-                url2 += '&blk=' + str(block)
-            if pb is not None:
-                url2 += '&platbook=' + str(pb)
-            if pg is not None:
-                url2 += '&platpage=' + str(pg)
-            url2 += '&subname=' + urllib.parse.quote(sub)
-            url2 += '&activeonly=true&size=10&page=1'
+    def get_acct_by_legal_request(legal_arg):
+        if 'subd' in legal_arg or 't' in legal_arg:
+            legal = (legal_arg['subd'], legal_arg['lt'], legal_arg['blk'], legal_arg['pb'], legal_arg['pg'],
+                     legal_arg['s'], legal_arg['t'], legal_arg['r'], legal_arg['subid'])
+            print(legal)
+            use_local_logging_config = False
+            if use_local_logging_config:
+                logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
+                logger = logging.getLogger(__name__)
+                logger.info('START')
+            sub, lot, block, pb, pg, s, t, r, subid = legal
+            sub = sub.replace(u'\xc2', u'').encode('utf-8')
+            logging.info(
+                'get_acct_by_legal(sub="' + str(sub) + '", lot=' + str(lot) + ', block=' + str(block) + ', pb=' + str(
+                    pb) + ', pg=' + str(pg) + ', s=' + str(s) + ', t=' + str(t) + ', r=' + str(r) + ', subid=' + str(
+                    subid) + ')')
+            ret = ''
+            if not ret:
+                url2 = 'https://bcpao.us/api/v1/search?'
+                if lot is not None:
+                    url2 += 'lot=' + str(lot)
+                if block is not None:
+                    url2 += '&blk=' + str(block)
+                if pb is not None:
+                    url2 += '&platbook=' + str(pb)
+                if pg is not None:
+                    url2 += '&platpage=' + str(pg)
+                url2 += '&subname=' + urllib.parse.quote(sub)
+                url2 += '&activeonly=true&size=10&page=1'
 
-            return url2
+                return url2, {'Accept': 'application/json'}
 
-    def get_acct_by_legal(self, legal):
-        url2 = self.get_acct_by_legal_request(legal)
-
-        headers = {'Accept': 'application/json'}
-
+    def get_acct_by_legal(self, legal_arg):
+        url2, headers = self.get_acct_by_legal_request(legal_arg)
         resp = requests.get(url2, headers=headers, verify=False, timeout=10)  # timeout in seconds
-
-        if resp.status_code == 200:
-            print(resp.content)
         return self.parse_acct_by_legal_response(resp)
 
     @staticmethod
@@ -938,6 +922,9 @@ class Jac(object):
         for i, r in enumerate(mrs):
             logging.info('count_id: ' + str(r['count']))
 
+            # if r['count'] < 60:  # temp hack
+            #     continue
+
             bclerk_efacts = BclerkEfacts(out_dir_htm)
             bclerk_efacts.fetch(r['case_number'])
             r['latest_amount_due'] = bclerk_efacts.latest_amount_due
@@ -950,13 +937,12 @@ class Jac(object):
             r['legals'] = bclerk_public_records.legals
 
             bcpao = Bcpao()
-            bcpao_info = bcpao.get_bcpao_from_legal(r['legal'], r['legals'])
+            bcpao_info = bcpao.get_bcpao_acc_from_legal(r['legal'], r['legals'])
             r['bcpao_acc'] = bcpao_info['bcpao_acc']
-            r['bcpao_item'] = bcpao_info['bcpao_item']
-            r['bcpao_accs'] = bcpao_info['bcpao_accs']
-
             if r['bcpao_acc'] is None:
                 r['bcpao_acc'] = ''
+            # r['bcpao_accs'] = bcpao_info['bcpao_accs']
+            r['bcpao_item'] = bcpao.get_bcpao_item_from_acc(r['bcpao_acc'])
             if r['bcpao_item'] is None:
                 r['bcpao_item'] = {}
 
@@ -1080,7 +1066,7 @@ class Jac(object):
         datasets = []
         logging.info('date_strings_to_add: ' + str(date_strings_to_add))
         logging.info('abc: ' + abc)
-        mrs = mrs[:2]  # temp hack
+        # mrs = mrs[:2]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in date_strings_to_add])
 
         for dataset in datasets:

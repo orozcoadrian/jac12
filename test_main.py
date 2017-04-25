@@ -53,10 +53,14 @@ class MyTestCase(unittest.TestCase):
                               'value_to_use': '859.99'})
 
     def test_bcpao_get_acct_by_legal(self):
-        ret = Bcpao().get_acct_by_legal_request((' WYNDHAM AT DURAN', '3', 'A', '53', '20', '09', '26', '36', 'UH'))
-        self.assertEqual(ret, 'https://bcpao.us/api/v1/search?'
+        url, headers = Bcpao().get_acct_by_legal_request(
+            {'t': '26', 'subd': ' WYNDHAM AT DURAN', 'u': None, 'r': '36', 'pb': '53',
+             'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH', 'pg': '20', 'lt': '3',
+             'blk': 'A', 'subid': 'UH', 's': '09'})
+        self.assertEqual(url, 'https://bcpao.us/api/v1/search?'
                               'lot=3&blk=A&platbook=53&platpage=20&'
                               'subname=%20WYNDHAM%20AT%20DURAN&activeonly=true&size=10&page=1')
+        self.assertEqual(headers, {'Accept': 'application/json'})
 
     def test_bcpao_parse_acct_by_legal_response(self):
         with open('bcpao_resp.json', 'r') as myfile:
@@ -67,6 +71,23 @@ class MyTestCase(unittest.TestCase):
 
             ret = Bcpao().parse_acct_by_legal_response(TestObject(status_code=200, text=myfile.read()))
             self.assertEqual(ret, '2627712')
+
+    def test_get_parcel_data_by_acct2_request(self):
+        ret = Bcpao().get_parcel_data_by_acct2_request('test_acct')
+        self.assertEqual(ret['url'], 'https://bcpao.us/api/v1/account/test_acct')
+        self.assertEqual(ret['headers'], {'Accept': 'application/json'})
+
+    def test_parse_bcpaco_item_response(self):
+        with open('bcpao_resp2.json', 'r') as myfile:
+            class TestObject(object):
+                def __init__(self, status_code, text):
+                    self.status_code = status_code
+                    self.text = text
+
+            ret = Bcpao().parse_bcpaco_item_response(TestObject(status_code=200, text=myfile.read()))
+            self.assertEqual(ret, {'address': '2778 WYNDHAM WAY MELBOURNE FL 32940', 'zip_code': '32940',
+                                   'frame code': 'MASNRYCONC, WOOD FRAME', 'year built': '2007',
+                                   'total base area': '4441', 'latest market value total': '$943,700.00'})
 
 
 if __name__ == '__main__':
