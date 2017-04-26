@@ -19,4 +19,4 @@ script:
     - pytest --cov main --verbose
 after_success:
     - pwd
-    - coveralls debug --verbose
+    - coveralls --verbose
