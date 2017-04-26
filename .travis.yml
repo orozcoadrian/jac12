@@ -17,4 +17,4 @@ script:
     - py.test
 after_success:
     - pwd
-    - coveralls --verbose
+    - coveralls debug --verbose
