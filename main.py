@@ -544,30 +544,26 @@ class BclerkPublicRecords(object):
     def get_name():
         return 'Legal'
 
-    @staticmethod
-    def get_bclerk_results_text(case):
-        print('get_bclerk_results_text(' + case + ')')
-        uri = 'http://web1.brevardclerk.us/oncoreweb/search.aspx'
-        browser = RoboBrowser(history=True, parser='html.parser')
-        browser.open(uri)
-
-        form = browser.get_forms()[0]
-        form['txtCaseNumber'].value = case
-        form['SearchType'].value = 'casenumber'
-        form['txtDocTypes'].value = ''
-        browser.submit_form(form)
-
-        resp = browser.response
-        print(resp)
-        return resp.text
-
-    def get_bclerk_results_soup(self, case):
-        bclerk_results_text = self.get_bclerk_results_text(case)
-        soup = BeautifulSoup(bclerk_results_text, "html.parser")
-        return soup
+    def get_request_info(self, case):
+        ret = {'uri': 'http://web1.brevardclerk.us/oncoreweb/search.aspx', 'form': {}}
+        ret['form']['txtCaseNumber'] = case
+        ret['form']['SearchType'] = 'casenumber'
+        ret['form']['txtDocTypes'] = ''
+        return ret
 
     def get_records_grid_for_case_number(self, case_number):
-        soup = self.get_bclerk_results_soup(case_number)  # ('05-2014-CA-024535-XXXX-XX')
+        request_info = self.get_request_info(case_number)
+        browser = RoboBrowser(history=True, parser='html.parser')
+        browser.open(request_info['uri'])
+        form = browser.get_forms()[0]
+        for k, v in request_info['form'].items():
+            form[k].value = v
+        browser.submit_form(form)
+        resp = browser.response
+        return self.parse_records_grid_response(resp.text)
+
+    def parse_records_grid_response(self, response):
+        soup = BeautifulSoup(response, "html.parser")
         adr = soup.find('table', id='dgResults')
         items = []
         col_names = []
@@ -1066,7 +1062,7 @@ class Jac(object):
         datasets = []
         logging.info('date_strings_to_add: ' + str(date_strings_to_add))
         logging.info('abc: ' + abc)
-        # mrs = mrs[:2]  # temp hack
+        mrs = mrs[:2]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in date_strings_to_add])
 
         for dataset in datasets:

@@ -1,7 +1,7 @@
 import unittest
 from datetime import date
 
-from main import Foreclosures, MyDate, Jac, Taxes, Bcpao
+from main import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords
 
 
 class MyTestCase(unittest.TestCase):
@@ -88,6 +88,27 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(ret, {'address': '2778 WYNDHAM WAY MELBOURNE FL 32940', 'zip_code': '32940',
                                    'frame code': 'MASNRYCONC, WOOD FRAME', 'year built': '2007',
                                    'total base area': '4441', 'latest market value total': '$943,700.00'})
+
+    def test_public_records_get_request_info(self):
+        ret = BclerkPublicRecords().get_request_info('test_acct')
+        self.assertEqual(ret, {'uri': 'http://web1.brevardclerk.us/oncoreweb/search.aspx',
+                               'form': {'SearchType': 'casenumber',
+                                        'txtCaseNumber': 'test_acct',
+                                        'txtDocTypes': ''}})
+
+    def test_public_records_parse_records_grid_response(self):
+        with open('public_records_resp.html', 'rb') as myfile:
+            ret = BclerkPublicRecords().parse_records_grid_response(myfile.read())
+            print(ret)
+            self.assertEqual(ret, [
+                {'Consideration': '$0.00', 'DocTypeKey': 'LIS PENDENS', 'Book': '5845', 'Page': '308',
+                 'CaseNumber': '05-2008-CA-006267-XXXX-XX',
+                 'First Legal': 'BLK 123 U 135 NW 1/4 OF NW 1/4 & NE 1/4 OF PINEDA OCEAN CLUB CONDO PH I ORB 2211/2194 S 23 T\n                            26 R 37 SUBID 00',
+                 'First Direct Name': 'WACHOVIA BANK\n                                NATIONAL ASSN TR',
+                 'First Indirect Name': 'FEKANY,PATRICK', 'RecordDate': '2/19/2008', '[row]': '1', 'CFN': '2008031599',
+                 'Status': ''},
+            ]
+                             )
 
 
 if __name__ == '__main__':
