@@ -4,19 +4,12 @@ python:
 before_install:
     - pip install pytest pytest-cov
     - pip install coveralls #https://ilovesymposia.com/2014/10/15/continuous-integration-in-python-5-report-test-coverage-using-coveralls/
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
   - pip install requests
   - pip install beautifulsoup4
   - pip install robobrowser
   - pip install xlwt
-# command to run tests, e.g. python setup.py test
-# script:  python main.py
-# script:  python -m unittest test_main
 script:
-    #- py.test
-    #- coverage run --source main test_main.py test
     - pytest --cov main --verbose
 after_success:
-    - pwd
-    - coveralls --verbose
+    - coveralls
