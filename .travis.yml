@@ -15,7 +15,8 @@ install:
 # script:  python -m unittest test_main
 script:
     #- py.test
-    - coverage run --source main test_main.py test
+    #- coverage run --source main test_main.py test
+    - pytest --cov main --verbose
 after_success:
     - pwd
     - coveralls debug --verbose
