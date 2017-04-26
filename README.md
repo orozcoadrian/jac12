@@ -1,2 +1,2 @@
 # jac12
-https://travis-ci.org/orozcoadrian/jac12.svg?branch=master
+[![Build Status](https://travis-ci.org/orozcoadrian/jac12.svg?branch=master)](https://travis-ci.org/orozcoadrian/jac12)
