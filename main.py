@@ -435,7 +435,6 @@ class Bcpao(object):
                 addr_str = parsed_json['siteAddresses'][0]['siteAddress']
             else:
                 addr_str = parsed_json['siteAddress']
-            print('"' + addr_str + '"')
             ret['address'] = addr_str  # .replace('\\r\\n','').strip()
             ret['zip_code'] = ret['address'][-5:]
             fc = ''
@@ -464,11 +463,9 @@ class Bcpao(object):
                 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
                 lmvt_str = locale.currency(val_, grouping=True)
             ret['latest market value total'] = lmvt_str
-            pprint.pprint(ret)
             return ret
 
     def get_bcpao_acc_from_legal(self, legal, legals):
-        print(legal)
         ret = {'bcpao_acc': None, 'bcpao_accs': [], 'bcpao_item': None}
         legals2 = [legal]
         legals2.extend(legals)
@@ -480,7 +477,6 @@ class Bcpao(object):
         return ret
 
     def get_bcpao_item_from_acc(self, acct):
-        print("get_bcpaco_item('" + acct + "')")
         req = self.get_parcel_data_by_acct2_request(acct)
         r = requests.get(req['url'], headers=req['headers'])
         return self.parse_bcpaco_item_response(r)
@@ -490,7 +486,6 @@ class Bcpao(object):
         if 'subd' in legal_arg or 't' in legal_arg:
             legal = (legal_arg['subd'], legal_arg['lt'], legal_arg['blk'], legal_arg['pb'], legal_arg['pg'],
                      legal_arg['s'], legal_arg['t'], legal_arg['r'], legal_arg['subid'])
-            print(legal)
             use_local_logging_config = False
             if use_local_logging_config:
                 logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
@@ -498,10 +493,10 @@ class Bcpao(object):
                 logger.info('START')
             sub, lot, block, pb, pg, s, t, r, subid = legal
             sub = sub.replace(u'\xc2', u'').encode('utf-8')
-            logging.info(
-                'get_acct_by_legal(sub="' + str(sub) + '", lot=' + str(lot) + ', block=' + str(block) + ', pb=' + str(
-                    pb) + ', pg=' + str(pg) + ', s=' + str(s) + ', t=' + str(t) + ', r=' + str(r) + ', subid=' + str(
-                    subid) + ')')
+            # logging.info(
+            #     'get_acct_by_legal(sub="' + str(sub) + '", lot=' + str(lot) + ', block=' + str(block) + ', pb=' + str(
+            #         pb) + ', pg=' + str(pg) + ', s=' + str(s) + ', t=' + str(t) + ', r=' + str(r) + ', subid=' + str(
+            #         subid) + ')')
             ret = ''
             if not ret:
                 url2 = 'https://bcpao.us/api/v1/search?'
@@ -555,7 +550,7 @@ class BclerkPublicRecords(object):
     @staticmethod
     def get_legal_from_str(the_str):
         legal_desc = the_str.replace(u'\xc2', u'')
-        logging.info('get_legal_from_str(' + legal_desc + ')')
+        # logging.info('get_legal_from_str(' + legal_desc + ')')
         ret = {}
 
         lt = 'LT (?P<lt>[0-9a-zA-Z]+)'
@@ -581,8 +576,6 @@ class BclerkPublicRecords(object):
         return ret
 
     def get_legals_by_case(self, case):
-        print('get_legals_by_case("' + case + '")')
-
         request_info = self.get_request_info(case)
         browser = RoboBrowser(history=True, parser='html.parser')
         browser.open(request_info['uri'])
@@ -725,7 +718,6 @@ class BclerkEfacts(object):
         for x in valid_patterns_for_original_mortgage:
             ret = self.get_lad_url_from_grid2(grid, x)
             if ret:
-                print('getting by: ' + x)
                 break
         return grid, ret
 
@@ -738,7 +730,6 @@ class BclerkEfacts(object):
         for x in valid_patterns_for_original_mortgage:
             ret = self.get_orig_mortgage_url_from_grid2(gr, x)
             if ret:
-                print('getting by: ' + x)
                 break
 
         return ret, x
@@ -765,8 +756,7 @@ class BclerkEfacts(object):
             ret['id2'] = ret['year'] + '_' + ret['court_type'] + '_' + ret['seq_number']
         return ret
 
-    def fetch(self, case_number_, court_type, id2, out_dir, seq_number, year):
-        print('MyRecord.fetch_cfm():' + str(case_number_))
+    def fetch(self, court_type, id2, out_dir, seq_number, year):
         request_info = self.get_request_info(court_type, seq_number, year)
 
         ret = dict(latest_amount_due=None, orig_mtg_link=None, orig_mtg_tag=None)
@@ -782,14 +772,13 @@ class BclerkEfacts(object):
 
             id2 = year + '_' + court_type + '_' + seq_number
 
-            logging.debug('get_reg_actions_text:')
             reg_actions_req_info = self.get_reg_actions_req_info(court_type, jsessionid, seq_number, year)
             r = requests.get(reg_actions_req_info['url'], reg_actions_req_info['data'],
                              headers=reg_actions_req_info['headers'], stream=True)
             r_text = r.text
-            logging.debug(r.ok)
-            logging.debug(r.status_code)
-            logging.debug('is_redirect: ' + str(r.is_redirect))
+            # logging.debug(r.ok)
+            # logging.debug(r.status_code)
+            # logging.debug('is_redirect: ' + str(r.is_redirect))
 
             if out_dir:
                 with open(out_dir + '/' + id2 + '_reg_actions.htm', 'w') as handle:
@@ -809,14 +798,14 @@ class BclerkEfacts(object):
 
     def get_reg_actions_req_info(self, court_type, jsessionid, seq_number, year):
         url = 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm?RequestTimeout=500'
-        logging.debug(url)
+        # logging.debug(url)
         cfid = '4749086'
         cftoken = '23056266'
         headers = self.get_headers(cfid, cftoken, jsessionid)
-        logging.debug(headers)
+        # logging.debug(headers)
         data = self.get_data(year, court_type, seq_number)
-        logging.debug(data)
-        logging.debug('before reg actions request')
+        # logging.debug(data)
+        # logging.debug('before reg actions request')
         reg_actions_req_info = {'url': url, 'data': data, 'headers': headers}
         return reg_actions_req_info
 
@@ -861,7 +850,7 @@ class Jac(object):
 
             bclerk_efacts = BclerkEfacts()
             be = bclerk_efacts.pre_cache(r['case_number'], out_dir_htm)
-            bclerk_efacts_info = bclerk_efacts.fetch(r['case_number'], be['court_type'], be['id2'], be['out_dir'],
+            bclerk_efacts_info = bclerk_efacts.fetch(be['court_type'], be['id2'], be['out_dir'],
                                                      be['seq_number'], be['year'])
             r['latest_amount_due'] = bclerk_efacts_info['latest_amount_due']
             r['orig_mtg_link'] = bclerk_efacts_info['orig_mtg_link']
@@ -891,14 +880,14 @@ class Jac(object):
                 # if i == 0:  # temp hack
                 #     break
 
-        logging.info('fetch complete')
-        logging.info('num records: ' + str(len(mrs)))
+        logging.info('sheet fetch complete')
+        logging.info('sheet num records: ' + str(len(mrs)))
         sheet_builder = XlBuilder(sheet_name)
         dataset = sheet_builder.add_sheet(mrs)
         return dataset
 
-    def get_non_cancelled_nums(self, args):
-        mrs = Foreclosures().add_foreclosures()
+    def get_non_cancelled_nums(self, args, mrs):
+        # mrs = Foreclosures().add_foreclosures()
         mrs = FilterCancelled(args).apply(mrs)
         date_counts = pprint.pformat(self.get_dates_count_map(mrs)).replace('\n', '<br>').replace(
             'datetime(', '').replace(', 0, 0', '').replace(', ', '/').replace(')', '')
@@ -978,6 +967,7 @@ class Jac(object):
 
         s = Foreclosures()
         mrs = s.get_items()
+        all_foreclosures = mrs[:]
 
         dates = MyDate().get_next_dates(date.today())
         logging.info(dates)
@@ -1002,18 +992,17 @@ class Jac(object):
         datasets = []
         logging.info('date_strings_to_add: ' + str(date_strings_to_add))
         logging.info('abc: ' + abc)
-        mrs = mrs[:2]  # temp hack
+        # mrs = [mrs[1]]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in date_strings_to_add])
 
         for dataset in datasets:
             Xl().add_data_set_sheet(dataset, book)
         book.save(out_file)
-        print(out_file)
 
         body = 'this result is for: ' + abc
         body += '<br>total records: ' + str(len(mrs))
 
-        date_counts = self.get_non_cancelled_nums(args)
+        date_counts = self.get_non_cancelled_nums(args, all_foreclosures)
 
         body += '<br><br>'
         body += 'the following summarizes how many not-cancelled items there are per month in the '
@@ -1021,7 +1010,6 @@ class Jac(object):
         body += 'as of now: <br>' + date_counts
         body += '<br><br>' + filename
 
-        print(body)
         file_paths = [out_file]
         if args.zip:
             def zipdir(path, azip):
@@ -1040,14 +1028,13 @@ class Jac(object):
             file_paths.append(final_zip_path)
 
         subject = '[jac biweekly report]' + ' for: ' + abc
-        print('subject: ' + subject)
-        print('body: ' + body)
 
         if args.email and args.passw:
             Jac().my_send_mail(file_paths, args.passw, subject, body)
 
-        print('duration %s' % timedelta(seconds=time.time() - start))
-        print('END')
+        logging.info(body)
+        logging.info('duration %s' % timedelta(seconds=time.time() - start))
+        logging.info('END')
         return 0
 
 
@@ -1099,8 +1086,9 @@ class Foreclosures(object):
             rows.append(current_row)
         return rows
 
-    def add_foreclosures(self, limit=None):
-        all2 = self.get_items()
+    @staticmethod
+    def add_foreclosures(all2, limit=None):
+        # all2 = self.get_items()
         logger = logging.getLogger(__name__)
         logger.info('all foreclosures:' + str(len(all2)))
         to_set = all2
