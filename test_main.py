@@ -1,7 +1,7 @@
 import unittest
 from datetime import date
 
-from main import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords, BclerkEfacts
+from main import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords, BclerkEfacts, XlBuilder
 
 
 class MyTestCase(unittest.TestCase):
@@ -134,6 +134,81 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(tag, 'OR MTG')
             self.assertEqual(url,
                              'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=rbBXye6I4qu58q/YufJbBA==&theKey=mfLJJALQq7FewO9aj6kDPQ==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997')
+
+    def test_xlbuilder_with_rows(self):
+        instance = XlBuilder('test_name')
+        # records = [MyRecord.MyRecord({
+        #     'case_number': 'cn0'
+        #     , 'case_title': 'ct0'
+        #     , 'foreclosure_sale_date': '2'
+        #     , 'count': '2'
+        #     , 'comment': ''
+        #     , 'taxes_value': ''
+        # })]
+        data_set = instance.add_sheet([{'case_number': '05-2008-CA-033772-XXXX-XX',
+                                        'taxes_url': 'https://brevard.county-taxes.com/public/real_estate/parcels/2627712',
+                                        'comment': '\xa0', 'taxes_value': '0', 'legals': [],
+                                        'bcpao_item': {'frame code': 'MASNRYCONC, WOOD FRAME', 'zip_code': '32940',
+                                                       'year built': '2007', 'latest market value total': '$943,700.00',
+                                                       'address': '2778 WYNDHAM WAY MELBOURNE FL 32940',
+                                                       'total base area': '4441'},
+                                        'foreclosure_sale_date': '2017-04-26',
+                                        'orig_mtg_link': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7Ba4EeWT71ewgv3amjxLBw==&theKey=TIbbOCD+TFEA1or3NprKhA==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
+                                        'bcpao_acc': '2627712', 'orig_mtg_tag': 'OR MTG',
+                                        'latest_amount_due': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=kXZYtPY5nJxqhnchAd/gow==&theKey=NN73L3AVCXFc+xj6fiV/lg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
+                                        'count': 2,
+                                        'legal': {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
+                                                  'r': '36', 'subd': ' WYNDHAM AT DURAN',
+                                                  'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH',
+                                                  't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'}])
+        self.assertTrue(data_set is not None)
+        print(data_set.get_items())
+        # for row in data_set.get_items():
+        header_row = data_set.get_items()[0]
+        self.assertEqual(21, len(header_row))
+        self.assertEqual('high', header_row[0].get_display())
+        self.assertEqual('win', header_row[1].get_display())
+        self.assertEqual('case_number', header_row[2].get_display())
+        self.assertEqual('case_title', header_row[3].get_display())
+        self.assertEqual('fc._sale_date', header_row[4].get_display())
+        self.assertEqual('case_info', header_row[5].get_display())
+        self.assertEqual('reg_actions', header_row[6].get_display())
+        self.assertEqual('count', header_row[7].get_display())
+        self.assertEqual('address', header_row[8].get_display())
+        self.assertEqual('zip', header_row[9].get_display())
+        self.assertEqual('liens-name', header_row[10].get_display())
+        self.assertEqual('bcpao', header_row[11].get_display())
+        self.assertEqual('f_code', header_row[12].get_display())
+        self.assertEqual('owed_link', header_row[13].get_display())
+        self.assertEqual('owed', header_row[14].get_display())
+        self.assertEqual('assessed', header_row[15].get_display())
+        self.assertEqual('base_area', header_row[16].get_display())
+        self.assertEqual('year built', header_row[17].get_display())
+        self.assertEqual('owed - ass', header_row[18].get_display())
+        self.assertEqual('orig_mtg', header_row[19].get_display())
+        self.assertEqual('taxes', header_row[20].get_display())
+        first_data_row = data_set.get_items()[1]
+        self.assertEqual('', first_data_row[0].get_display())
+        self.assertEqual('\xa0', first_data_row[1].get_display())
+        self.assertEqual('05-2008-CA-033772-', first_data_row[2].get_display())
+        self.assertEqual('BANK NEW YORK VS W COOK', first_data_row[3].get_display())
+        self.assertEqual('2017-04-26', first_data_row[4].get_display())
+        self.assertEqual('case_info', first_data_row[5].get_display())
+        self.assertEqual('reg_actions', first_data_row[6].get_display())
+        self.assertEqual(2, first_data_row[7].get_display())
+        self.assertEqual('2778 WYNDHAM WAY MELBOURNE FL 32940', first_data_row[8].get_display())
+        self.assertEqual(32940, first_data_row[9].get_display())
+        self.assertEqual('COOK, W', first_data_row[10].get_display())
+        self.assertEqual('2627712', first_data_row[11].get_display())
+        self.assertEqual('MASNRYCONC, WOOD FRAME', first_data_row[12].get_display())
+        self.assertEqual('link', first_data_row[13].get_display())
+        self.assertEqual('', first_data_row[14].get_display())
+        self.assertEqual(943700.0, first_data_row[15].get_display())
+        self.assertEqual(4441.0, first_data_row[16].get_display())
+        self.assertEqual(2007, first_data_row[17].get_display())
+        self.assertEqual(None, first_data_row[18].get_display())
+        self.assertEqual('OR MTG', first_data_row[19].get_display())
+        self.assertEqual('0', first_data_row[20].get_display())
 
 
 if __name__ == '__main__':
