@@ -469,7 +469,7 @@ class Bcpao(object):
 
     def get_bcpao_acc_from_legal(self, legal, legals):
         print(legal)
-        ret = dict(bcpao_acc=None, bcpao_accs=[], bcpao_item=None)
+        ret = {'bcpao_acc': None, 'bcpao_accs': [], 'bcpao_item': None}
         legals2 = [legal]
         legals2.extend(legals)
         for l in legals2:
@@ -796,10 +796,7 @@ class BclerkEfacts(object):
                     handle.write(r_text)
             lad, tag, url = self.parse_reg_actions_response(r_text)
 
-            ret3 = {}
-            ret3['latest_amount_due'] = lad
-            ret3['orig_mtg_link'] = url
-            ret3['orig_mtg_tag'] = tag
+            ret3 = {'latest_amount_due': lad, 'orig_mtg_link': url, 'orig_mtg_tag': tag}
 
             ret4 = dict(itertools.chain(ret.items(), ret3.items()))
             ret = ret4
@@ -820,7 +817,7 @@ class BclerkEfacts(object):
         data = self.get_data(year, court_type, seq_number)
         logging.debug(data)
         logging.debug('before reg actions request')
-        reg_actions_req_info = dict(url=url, data=data, headers=headers)
+        reg_actions_req_info = {'url': url, 'data': data, 'headers': headers}
         return reg_actions_req_info
 
     @staticmethod
@@ -837,9 +834,9 @@ class BclerkEfacts(object):
         cfid = '1550556'
         cftoken = '74317641'
         url = self.get_url()
-        headers = self.get_headers(cfid, cftoken, None)
+        headers2 = self.get_headers(cfid, cftoken, None)
         data = self.get_data(year, court_type, seq_number)
-        request_info = dict(url=url, data=data, headers=headers, stream=True, timeout=5)
+        request_info = {'url': url, 'data': data, 'headers': headers2, 'stream': True, 'timeout': 5}
         return request_info
 
 
