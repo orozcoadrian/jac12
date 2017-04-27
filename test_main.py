@@ -1,7 +1,7 @@
 import unittest
 from datetime import date
 
-from main import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords
+from main import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords, BclerkEfacts
 
 
 class MyTestCase(unittest.TestCase):
@@ -103,6 +103,37 @@ class MyTestCase(unittest.TestCase):
                 {'t': '26', 'lt': '3', 'subd': ' WYNDHAM AT DURAN', 's': '09', 'u': None, 'blk': 'A', 'pg': '20',
                  'subid': 'UH', 'pb': '53',
                  'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH', 'r': '36'}])
+
+    def test_bclerk_efacts_pre_cache(self):
+        ret = BclerkEfacts().pre_cache('05-2008-CA-006267-XXXX-XX', 'test_out_dir')
+        self.assertEquals(ret,
+                          {'out_dir': 'test_out_dir', 'year': '2008', 'seq_number': '006267', 'id2': '2008_CA_006267',
+                           'court_type': 'CA'})
+
+    def test_bclerk_efacts_get_request_info(self):
+        ret = BclerkEfacts().get_request_info('CA', '006267', '2008')
+        self.assertEquals(ret, {'timeout': 5, 'headers': {'Content-Type': 'application/x-www-form-urlencoded',
+                                                          'Cookie': 'CFID=1550556; CFTOKEN=74317641; JSESSIONID=None'},
+                                'url': 'https://vweb1.brevardclerk.us/facts/d_caseno.cfm', 'stream': True,
+                                'data': 'CaseNumber1=05&CaseNumber2=2008&CaseNumber3=CA&CaseNumber4=006267&CaseNumber5=&CaseNumber6=&submit=Submit'})
+
+    def test_bclerk_efacts_get_reg_actions_req_info(self):
+        ret = BclerkEfacts().get_reg_actions_req_info('CA', '99AF34FAA963FD449F028397802FF0E4.cfusion', '006267',
+                                                      '2008')
+        self.assertEquals(ret, {
+            'data': 'CaseNumber1=05&CaseNumber2=2008&CaseNumber3=CA&CaseNumber4=006267&CaseNumber5=&CaseNumber6=&submit=Submit',
+            'headers': {'Cookie': 'CFID=4749086; CFTOKEN=23056266; JSESSIONID=99AF34FAA963FD449F028397802FF0E4.cfusion',
+                        'Content-Type': 'application/x-www-form-urlencoded'},
+            'url': 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm?RequestTimeout=500'})
+
+    def test_bclerk_efacts_get_reg_actions_parse(self):
+        with open('bclerk_reg_response.html', 'rb') as myfile:
+            lad, tag, url = BclerkEfacts().parse_reg_actions_response(myfile.read())
+            self.assertEqual(lad,
+                             'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7tioo4AAF5DuCsZjF66dIw==&theKey=14mhPOwb8DAlMYwyf4HSrg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997')
+            self.assertEqual(tag, 'OR MTG')
+            self.assertEqual(url,
+                             'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=rbBXye6I4qu58q/YufJbBA==&theKey=mfLJJALQq7FewO9aj6kDPQ==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997')
 
 
 if __name__ == '__main__':

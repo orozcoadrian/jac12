@@ -544,7 +544,8 @@ class BclerkPublicRecords(object):
     def get_name():
         return 'Legal'
 
-    def get_request_info(self, case):
+    @staticmethod
+    def get_request_info(case):
         ret = {'uri': 'http://web1.brevardclerk.us/oncoreweb/search.aspx', 'form': {}}
         ret['form']['txtCaseNumber'] = case
         ret['form']['SearchType'] = 'casenumber'
@@ -578,7 +579,6 @@ class BclerkPublicRecords(object):
             ret['condo'] = True
         ret['legal_desc'] = legal_desc
         return ret
-
 
     def get_legals_by_case(self, case):
         print('get_legals_by_case("' + case + '")')
@@ -655,12 +655,6 @@ class BclerkPublicRecords(object):
 
 
 class BclerkEfacts(object):
-    def __init__(self, out_dir_htm):
-        self.out_dir_htm = out_dir_htm
-        self.latest_amount_due = None
-        self.orig_mtg_link = None
-        self.orig_mtg_tag = None
-
     @staticmethod
     def get_name():
         return 'Cfm'
@@ -688,52 +682,19 @@ class BclerkEfacts(object):
         ret += 'submit=Submit'
         return ret
 
-    def case_info(self, out_dir, year, court_type, seq_number, cfid, cftoken):
-        id2 = year + '_' + court_type + '_' + seq_number
-        logging.debug('hi')
-        logging.debug('case_info(' + ', '.join([out_dir, year, court_type, seq_number, cfid, cftoken]) + ')')
-        url = self.get_url()
-        headers = self.get_headers(cfid, cftoken, None)
-        data = self.get_data(year, court_type, seq_number)
-        r = requests.post(url, data, headers=headers, stream=True, timeout=5)
-        logging.debug('r.cookies: ' + str(r.cookies))
-        logging.debug('r.cookies["JSESSIONID"]: ' + str(r.cookies['JSESSIONID']))
-        ret = {}
-        if out_dir:
-            with open(out_dir + '/' + id2 + '_case_info.htm', 'wb') as handle:
-                for block in r.iter_content(1024):
-                    if not block:
-                        break
-                    handle.write(block)
-        return ret, r.cookies['JSESSIONID']
-
-    def do(self, out_dir, year, court_type, seq_number, cfid, cftoken):
-        ret1, jsessionid = self.case_info(out_dir, year, court_type, seq_number, cfid, cftoken)
-        ret2 = self.reg(out_dir, year, court_type, seq_number, jsessionid)
-        ret = dict(itertools.chain(ret1.items(), ret2.items()))
+    @staticmethod
+    def get_lad_url_from_grid2(g, a_pattern):
+        ret = None
+        for i in g['items']:
+            if 'Description' in i and a_pattern in i['Description']:
+                if i['Img']:
+                    ret = i['Img']
+                    break
         return ret
 
-    def get_reg_actions_text(self, year, court_type, seq_number, jsessionid):
-        logging.debug('get_reg_actions_text:')
-        url = 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm?RequestTimeout=500'
-        logging.debug(url)
-        cfid = '4749086'
-        cftoken = '23056266'
-        headers = self.get_headers(cfid, cftoken, jsessionid)
-        logging.debug(headers)
-        data = self.get_data(year, court_type, seq_number)
-        logging.debug(data)
-        logging.debug('before reg actions request')
-        r = requests.get(url, data, headers=headers, stream=True)
-        r_text = r.text
-        logging.debug(r.ok)
-        logging.debug(r.status_code)
-        logging.debug('is_redirect: ' + str(r.is_redirect))
-        return r_text
-
-    @staticmethod
-    def get_reg_actions_dataset(r_text):
-        soup = BeautifulSoup(r_text.encode('utf-8'), 'html.parser')
+    def get_lad_url_from_rtext(self, r_text):
+        # grid = self.get_reg_actions_dataset(r_text)
+        soup = BeautifulSoup(r_text, 'html.parser')
         ret = {'case number': soup.title.text, 'case title': soup.find_all('font', color='Blue')[0].text}
         items = []
         col_names = []
@@ -756,35 +717,17 @@ class BclerkEfacts(object):
             if row >= 1:
                 items.append(current_item)
         ret['items'] = items
-        return ret
+        # return ret
+        grid = ret
 
-    def get_lad_from_reg_text2(self, g):
         ret = None
         valid_patterns_for_original_mortgage = ['ER: F/J FCL']
         for x in valid_patterns_for_original_mortgage:
-            ret = self.get_lad_url_from_grid2(g, x)
+            ret = self.get_lad_url_from_grid2(grid, x)
             if ret:
                 print('getting by: ' + x)
                 break
-        return ret
-
-    @staticmethod
-    def get_lad_url_from_grid2(g, a_pattern):
-        ret = None
-        for i in g['items']:
-            if 'Description' in i and a_pattern in i['Description']:
-                if i['Img']:
-                    ret = i['Img']
-                    break
-        return ret
-
-    def get_lad_url_from_rtext(self, r_text):
-        grid = self.get_reg_actions_dataset(r_text)
-        return self.get_lad_from_reg_text2(grid)
-
-    def get_orig_mortgage_url_from_rtext(self, r_text):
-        grid = self.get_reg_actions_dataset(r_text)
-        return self.get_orig_mortgage_url_from_grid(grid)
+        return grid, ret
 
     def get_orig_mortgage_url_from_grid(self, gr):
         ret = None
@@ -810,36 +753,94 @@ class BclerkEfacts(object):
                     break
         return ret
 
-    def reg(self, out_dir, year, court_type, seq_number, jsessionid):
-        ret = {}
-        id2 = year + '_' + court_type + '_' + seq_number
-        r_text = self.get_reg_actions_text(year, court_type, seq_number, jsessionid)
-        lad = self.get_lad_url_from_rtext(r_text)
-        ret['latest_amount_due'] = lad
-        url, tag = self.get_orig_mortgage_url_from_rtext(r_text)
-        ret['orig_mtg_link'] = url
-        ret['orig_mtg_tag'] = tag
-
-        if out_dir:
-            with open(out_dir + '/' + id2 + '_reg_actions.htm', 'w') as handle:
-                handle.write(r_text)
+    @staticmethod
+    def pre_cache(case, out_dir):
+        ret = dict(court_type=None, id2=None, out_dir=out_dir, seq_number=None, year=None)
+        m = re.search('(.*)-(.*)-(.*)-(.*)-.*-.*', case)
+        if m:
+            ret['year'] = m.group(2)
+            ret['court_type'] = m.group(3)
+            ret['seq_number'] = m.group(4)
+            ret['out_dir'] = out_dir
+            ret['id2'] = ret['year'] + '_' + ret['court_type'] + '_' + ret['seq_number']
         return ret
 
-    def fetch(self, case_number_):
-        m = re.search('(.*)-(.*)-(.*)-(.*)-.*-.*', case_number_)
+    def fetch(self, case_number_, court_type, id2, out_dir, seq_number, year):
         print('MyRecord.fetch_cfm():' + str(case_number_))
-        if m:
-            year = m.group(2)
-            court_type = m.group(3)
-            seq_number = m.group(4)
-            cfid = '1550556'
-            cftoken = '74317641'
-            values = self.do(self.out_dir_htm, year, court_type, seq_number, cfid, cftoken)
-            if 'latest_amount_due' in values:
-                self.latest_amount_due = values['latest_amount_due']
-            if 'orig_mtg_link' in values:
-                self.orig_mtg_link = values['orig_mtg_link']
-                self.orig_mtg_tag = values['orig_mtg_tag']
+        request_info = self.get_request_info(court_type, seq_number, year)
+
+        ret = dict(latest_amount_due=None, orig_mtg_link=None, orig_mtg_tag=None)
+        if request_info is not None:
+            r = requests.post(request_info['url'], request_info['data'], headers=request_info['headers'],
+                              stream=request_info['stream'], timeout=request_info['timeout'])
+            resp = self.parse_resp2(r)
+            if out_dir:
+                with open(out_dir + '/' + id2 + '_case_info.htm', 'wb') as handle:
+                    for bl in resp['content']:
+                        handle.write(bl)
+            jsessionid = r.cookies['JSESSIONID']
+
+            id2 = year + '_' + court_type + '_' + seq_number
+
+            logging.debug('get_reg_actions_text:')
+            reg_actions_req_info = self.get_reg_actions_req_info(court_type, jsessionid, seq_number, year)
+            r = requests.get(reg_actions_req_info['url'], reg_actions_req_info['data'],
+                             headers=reg_actions_req_info['headers'], stream=True)
+            r_text = r.text
+            logging.debug(r.ok)
+            logging.debug(r.status_code)
+            logging.debug('is_redirect: ' + str(r.is_redirect))
+
+            if out_dir:
+                with open(out_dir + '/' + id2 + '_reg_actions.htm', 'w') as handle:
+                    handle.write(r_text)
+            lad, tag, url = self.parse_reg_actions_response(r_text)
+
+            ret3 = {}
+            ret3['latest_amount_due'] = lad
+            ret3['orig_mtg_link'] = url
+            ret3['orig_mtg_tag'] = tag
+
+            ret4 = dict(itertools.chain(ret.items(), ret3.items()))
+            ret = ret4
+        return ret
+
+    def parse_reg_actions_response(self, r_text):
+        grid, lad = self.get_lad_url_from_rtext(r_text)
+        url, tag = self.get_orig_mortgage_url_from_grid(grid)
+        return lad, tag, url
+
+    def get_reg_actions_req_info(self, court_type, jsessionid, seq_number, year):
+        url = 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm?RequestTimeout=500'
+        logging.debug(url)
+        cfid = '4749086'
+        cftoken = '23056266'
+        headers = self.get_headers(cfid, cftoken, jsessionid)
+        logging.debug(headers)
+        data = self.get_data(year, court_type, seq_number)
+        logging.debug(data)
+        logging.debug('before reg actions request')
+        reg_actions_req_info = dict(url=url, data=data, headers=headers)
+        return reg_actions_req_info
+
+    @staticmethod
+    def parse_resp2(r):
+        resp = {'jsessionid': r.cookies['JSESSIONID'], 'content': []}
+        for block in r.iter_content(1024):
+            if not block:
+                break
+            resp['content'].append(block)
+
+        return resp
+
+    def get_request_info(self, court_type, seq_number, year):
+        cfid = '1550556'
+        cftoken = '74317641'
+        url = self.get_url()
+        headers = self.get_headers(cfid, cftoken, None)
+        data = self.get_data(year, court_type, seq_number)
+        request_info = dict(url=url, data=data, headers=headers, stream=True, timeout=5)
+        return request_info
 
 
 class Jac(object):
@@ -861,11 +862,13 @@ class Jac(object):
             # if r['count'] < 60:  # temp hack
             #     continue
 
-            bclerk_efacts = BclerkEfacts(out_dir_htm)
-            bclerk_efacts.fetch(r['case_number'])
-            r['latest_amount_due'] = bclerk_efacts.latest_amount_due
-            r['orig_mtg_link'] = bclerk_efacts.orig_mtg_link
-            r['orig_mtg_tag'] = bclerk_efacts.orig_mtg_tag
+            bclerk_efacts = BclerkEfacts()
+            be = bclerk_efacts.pre_cache(r['case_number'], out_dir_htm)
+            bclerk_efacts_info = bclerk_efacts.fetch(r['case_number'], be['court_type'], be['id2'], be['out_dir'],
+                                                     be['seq_number'], be['year'])
+            r['latest_amount_due'] = bclerk_efacts_info['latest_amount_due']
+            r['orig_mtg_link'] = bclerk_efacts_info['orig_mtg_link']
+            r['orig_mtg_tag'] = bclerk_efacts_info['orig_mtg_tag']
 
             bclerk_public_records = BclerkPublicRecords()
             bclerk_public_records.fetch(r['case_number'])
