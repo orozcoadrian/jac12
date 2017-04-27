@@ -98,17 +98,11 @@ class MyTestCase(unittest.TestCase):
 
     def test_public_records_parse_records_grid_response(self):
         with open('public_records_resp.html', 'rb') as myfile:
-            ret = BclerkPublicRecords().parse_records_grid_response(myfile.read())
-            print(ret)
+            ret = BclerkPublicRecords().parse_response(myfile.read())
             self.assertEqual(ret, [
-                {'Consideration': '$0.00', 'DocTypeKey': 'LIS PENDENS', 'Book': '5845', 'Page': '308',
-                 'CaseNumber': '05-2008-CA-006267-XXXX-XX',
-                 'First Legal': 'BLK 123 U 135 NW 1/4 OF NW 1/4 & NE 1/4 OF PINEDA OCEAN CLUB CONDO PH I ORB 2211/2194 S 23 T\n                            26 R 37 SUBID 00',
-                 'First Direct Name': 'WACHOVIA BANK\n                                NATIONAL ASSN TR',
-                 'First Indirect Name': 'FEKANY,PATRICK', 'RecordDate': '2/19/2008', '[row]': '1', 'CFN': '2008031599',
-                 'Status': ''},
-            ]
-                             )
+                {'t': '26', 'lt': '3', 'subd': ' WYNDHAM AT DURAN', 's': '09', 'u': None, 'blk': 'A', 'pg': '20',
+                 'subid': 'UH', 'pb': '53',
+                 'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH', 'r': '36'}])
 
 
 if __name__ == '__main__':

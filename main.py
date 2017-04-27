@@ -551,35 +551,6 @@ class BclerkPublicRecords(object):
         ret['form']['txtDocTypes'] = ''
         return ret
 
-    def get_records_grid_for_case_number(self, case_number):
-        request_info = self.get_request_info(case_number)
-        browser = RoboBrowser(history=True, parser='html.parser')
-        browser.open(request_info['uri'])
-        form = browser.get_forms()[0]
-        for k, v in request_info['form'].items():
-            form[k].value = v
-        browser.submit_form(form)
-        resp = browser.response
-        return self.parse_records_grid_response(resp.text)
-
-    def parse_records_grid_response(self, response):
-        soup = BeautifulSoup(response, "html.parser")
-        adr = soup.find('table', id='dgResults')
-        items = []
-        col_names = []
-        trs = adr.findAll("tr")
-        for r, a in enumerate(trs):
-            if r != 0 and r != len(trs) - 1:
-                current_item = {}
-                for c, d in enumerate(a.findAll("td")):
-                    if r == 1:
-                        col_names.append(d.get_text(strip=True))
-                    else:
-                        current_item[col_names[c]] = d.get_text(strip=True)
-                if r > 1:
-                    items.append(current_item)
-        return items
-
     @staticmethod
     def get_legal_from_str(the_str):
         legal_desc = the_str.replace(u'\xc2', u'')
@@ -608,71 +579,40 @@ class BclerkPublicRecords(object):
         ret['legal_desc'] = legal_desc
         return ret
 
-    def oncoreweb_by_legal(self, leg_desc_in):
-        l = self.get_legal_from_str(leg_desc_in)
-        theblk = ''
-        thelt = ''
-        thepb = ''
-        thepg = ''
-        if 'blk' in l and l['blk']:
-            theblk = '|Block' + ',' + l['blk']
-        if 'lt' in l and l['lt']:
-            thelt = l['lt']
-        if 'pb' in l and l['pb']:
-            thepb = l['pb']
-        if 'pg' in l and l['pg']:
-            thepg = l['pg']
-        if 's' in l and 'r' in l and 't' in l and 'subid' in l and l['s'] is not None and l['r'] is not None and \
-                        l['t'] is not None and l['subid'] is not None:
-            lot_s = urllib.parse.quote('Lot,' + thelt + theblk + '|Land_Lot' + ',' + thepb
-                                       + '|District' + ',' + thepg + '|PropSection' + ',' + l['s'] + '|Building' + ',' +
-                                       l[
-                                           't'] + '|Range' + ',' + l['r']
-                                       + '|Phase' + ',' + l['subid'])
-            mys = 'http://web1.brevardclerk.us/oncoreweb/search.aspx?' \
-                  'bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf='
-            mys += lot_s
-            mys += '&cn=&dt=&st=legal&ld='
-            ret = mys
-
-            return ret
-        return ''
-
-    def get_legal_by_case(self, case):
-        print('get_legal_by_case("' + case + '")')
-        ret = {}
-        rows = self.get_records_grid_for_case_number(case)
-        lds = set()
-        for row in rows:
-            if row['First Legal'] and len(row['First Legal']) > 0:
-                lds.add(row['First Legal'])
-        ret['legal_description'] = '; '.join(lds).strip()
-        # if len(lds) > 0:
-        #     ret['oncoreweb_by_legal_url'] = self.oncoreweb_by_legal(lds[0])
-        #     print(ret['oncoreweb_by_legal_url'])
-        ret['oncoreweb_by_legal_urls'] = []
-        for ld in lds:
-            legal00 = self.oncoreweb_by_legal(ld)
-            legal_desc = ld.strip()
-            temp = self.get_legal_from_str(legal_desc)
-            if temp:
-                temp = dict(itertools.chain(temp.items()))
-                # if i < (len(lds) - 1):
-                #     the_str = 'choosing a legal description (index='
-                #     the_str += str(i)
-                #     the_str += ':' + legal_desc
-                #     the_str += ') before going through all of them(total='
-                #     the_str += str(len(lds))
-                #     the_str += '): '
-                # break
-            ret['oncoreweb_by_legal_urls'].append((legal00, temp))
-        return ret
 
     def get_legals_by_case(self, case):
         print('get_legals_by_case("' + case + '")')
-        rets = []
 
-        rows = self.get_records_grid_for_case_number(case)
+        request_info = self.get_request_info(case)
+        browser = RoboBrowser(history=True, parser='html.parser')
+        browser.open(request_info['uri'])
+        form = browser.get_forms()[0]
+        for k, v in request_info['form'].items():
+            form[k].value = v
+        browser.submit_form(form)
+        resp = browser.response
+
+        resp_text = resp.text
+        return self.parse_response(resp_text)
+
+    def parse_response(self, resp_text):
+        rets = []
+        soup = BeautifulSoup(resp_text, "html.parser")
+        adr = soup.find('table', id='dgResults')
+        items = []
+        col_names = []
+        trs = adr.findAll("tr")
+        for r, a in enumerate(trs):
+            if r != 0 and r != len(trs) - 1:
+                current_item = {}
+                for c, d in enumerate(a.findAll("td")):
+                    if r == 1:
+                        col_names.append(d.get_text(strip=True))
+                    else:
+                        current_item[col_names[c]] = d.get_text(strip=True)
+                if r > 1:
+                    items.append(current_item)
+        rows = items
         lds = set()
         for row in rows:
             if row['First Legal'] and len(row['First Legal']) > 0:
@@ -1032,7 +972,7 @@ class Jac(object):
         args = parser.parse_args()
 
         logging.debug('jac starting')
-        timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+        timestamp = time.strftime("%Y-%m-%d__%H-%M-%S")
 
         logging.info('args: ' + str(args))
 
