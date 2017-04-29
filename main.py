@@ -530,10 +530,27 @@ class Bcpao(object):
         return 'https://www.bcpao.us/PropertySearch/#/parcel/' + acct
 
 
+class BclerkPublicRecordsInfrastructure(object):
+    def get_resp_from_request(self, request_info):
+        # request_info = self.get_request_info(case)
+        browser = RoboBrowser(history=True, parser='html.parser')
+        browser.open(request_info['uri'])
+        form = browser.get_forms()[0]
+        for k, v in request_info['form'].items():
+            form[k].value = v
+        browser.submit_form(form)
+        resp = browser.response
+
+        resp_text = resp.text
+        # return self.parse_response(resp_text)
+        return resp_text
+
+
 class BclerkPublicRecords(object):
-    def __init__(self):
+    def __init__(self, bcpr_infra=None):
         self.legal = None
         self.legals = None
+        self.bcpr_infra = bcpr_infra
 
     @staticmethod
     def get_name():
@@ -577,16 +594,8 @@ class BclerkPublicRecords(object):
 
     def get_legals_by_case(self, case):
         request_info = self.get_request_info(case)
-        browser = RoboBrowser(history=True, parser='html.parser')
-        browser.open(request_info['uri'])
-        form = browser.get_forms()[0]
-        for k, v in request_info['form'].items():
-            form[k].value = v
-        browser.submit_form(form)
-        resp = browser.response
-
-        resp_text = resp.text
-        return self.parse_response(resp_text)
+        resp = self.bcpr_infra.get_resp_from_request(request_info)
+        return self.parse_response(resp)
 
     def parse_response(self, resp_text):
         rets = []
@@ -747,7 +756,7 @@ class BclerkEfacts(object):
     @staticmethod
     def pre_cache(case, out_dir):
         ret = dict(court_type=None, id2=None, out_dir=out_dir, seq_number=None, year=None)
-        m = re.search('(.*)-(.*)-(.*)-(.*)-.*-.*', case)
+        m = re.search('(\\d{2})-(\\d{4})-(.{2})-(\\d{6})-.*', case)
         if m:
             ret['year'] = m.group(2)
             ret['court_type'] = m.group(3)
@@ -830,8 +839,11 @@ class BclerkEfacts(object):
 
 
 class Jac(object):
-    @staticmethod
-    def get_mainsheet_dataset(mrs, out_dir, date_string_to_add):
+    def __init__(self):
+        logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
+        # logger = logging.getLogger(__name__)
+
+    def get_mainsheet_dataset(self, mrs, out_dir, date_string_to_add):
         logging.info('**get_mainsheet_dataset: ' + date_string_to_add)
 
         filter_by_dates = FilterByDates()
@@ -848,43 +860,43 @@ class Jac(object):
             # if r['count'] < 60:  # temp hack
             #     continue
 
-            bclerk_efacts = BclerkEfacts()
-            be = bclerk_efacts.pre_cache(r['case_number'], out_dir_htm)
-            bclerk_efacts_info = bclerk_efacts.fetch(be['court_type'], be['id2'], be['out_dir'],
-                                                     be['seq_number'], be['year'])
-            r['latest_amount_due'] = bclerk_efacts_info['latest_amount_due']
-            r['orig_mtg_link'] = bclerk_efacts_info['orig_mtg_link']
-            r['orig_mtg_tag'] = bclerk_efacts_info['orig_mtg_tag']
-
-            bclerk_public_records = BclerkPublicRecords()
-            bclerk_public_records.fetch(r['case_number'])
-            r['legal'] = bclerk_public_records.legal
-            r['legals'] = bclerk_public_records.legals
-
-            bcpao = Bcpao()
-            bcpao_info = bcpao.get_bcpao_acc_from_legal(r['legal'], r['legals'])
-            r['bcpao_acc'] = bcpao_info['bcpao_acc']
-            if r['bcpao_acc'] is None:
-                r['bcpao_acc'] = ''
-            # r['bcpao_accs'] = bcpao_info['bcpao_accs']
-            r['bcpao_item'] = bcpao.get_bcpao_item_from_acc(r['bcpao_acc'])
-            if r['bcpao_item'] is None:
-                r['bcpao_item'] = {}
-
-            taxes = Taxes()
-            taxes_info = taxes.get_info_from_account(r['bcpao_acc'])
-            if taxes_info is not None:
-                r['taxes_value'] = taxes_info['value_to_use']
-                r['taxes_url'] = taxes_info['url_to_use']
-
-                # if i == 0:  # temp hack
-                #     break
+            self.fill_by_case_number(out_dir_htm, r)
 
         logging.info('sheet fetch complete')
         logging.info('sheet num records: ' + str(len(mrs)))
         sheet_builder = XlBuilder(sheet_name)
         dataset = sheet_builder.add_sheet(mrs)
         return dataset
+
+    def fill_by_case_number(self, out_dir_htm, r):
+        bclerk_efacts = BclerkEfacts()
+        be = bclerk_efacts.pre_cache(r['case_number'], out_dir_htm)
+        bclerk_efacts_info = bclerk_efacts.fetch(be['court_type'], be['id2'], be['out_dir'],
+                                                 be['seq_number'], be['year'])
+        r['latest_amount_due'] = bclerk_efacts_info['latest_amount_due']
+        r['orig_mtg_link'] = bclerk_efacts_info['orig_mtg_link']
+        r['orig_mtg_tag'] = bclerk_efacts_info['orig_mtg_tag']
+        bclerk_public_records = BclerkPublicRecords(BclerkPublicRecordsInfrastructure())
+        bclerk_public_records.fetch(r['case_number'])
+        r['legal'] = bclerk_public_records.legal
+        r['legals'] = bclerk_public_records.legals
+        bcpao = Bcpao()
+        bcpao_info = bcpao.get_bcpao_acc_from_legal(r['legal'], r['legals'])
+        r['bcpao_acc'] = bcpao_info['bcpao_acc']
+        if r['bcpao_acc'] is None:
+            r['bcpao_acc'] = ''
+        # r['bcpao_accs'] = bcpao_info['bcpao_accs']
+        r['bcpao_item'] = bcpao.get_bcpao_item_from_acc(r['bcpao_acc'])
+        if r['bcpao_item'] is None:
+            r['bcpao_item'] = {}
+        taxes = Taxes()
+        taxes_info = taxes.get_info_from_account(r['bcpao_acc'])
+        if taxes_info is not None:
+            r['taxes_value'] = taxes_info['value_to_use']
+            r['taxes_url'] = taxes_info['url_to_use']
+
+            # if i == 0:  # temp hack
+            #     break
 
     def get_non_cancelled_nums(self, args, mrs):
         # mrs = Foreclosures().add_foreclosures()
@@ -949,9 +961,7 @@ class Jac(object):
         return [x.strftime("%m.%d.%y") for x in dates]
 
     def go(self):
-        logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
-        logger = logging.getLogger(__name__)
-        logger.info('START')
+        logging.info('START')
         start = time.time()
         parser = argparse.ArgumentParser()
         parser.add_argument("--zip", action='store_true', help="do zip.")
@@ -993,6 +1003,7 @@ class Jac(object):
         logging.info('date_strings_to_add: ' + str(date_strings_to_add))
         logging.info('abc: ' + abc)
         # mrs = [mrs[1]]  # temp hack
+        mrs = [mrs[3]]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in date_strings_to_add])
 
         for dataset in datasets:
@@ -1036,6 +1047,11 @@ class Jac(object):
         logging.info('duration %s' % timedelta(seconds=time.time() - start))
         logging.info('END')
         return 0
+
+    def get_by_case_number(self, case_number):
+        r = {'case_number': case_number}
+        self.fill_by_case_number(None, r)
+        print(r)
 
 
 class MyDate(object):
@@ -1100,6 +1116,14 @@ class Foreclosures(object):
 
 def main():
     return Jac().go()
+    # for c in ['05-2008-CA-006267-',
+    #           '05-2012-CA-025704-',
+    #           '05-2014-CA-019884-',
+    #           '05-2016-CA-021542-',
+    #           '05-2016-CA-028754-',
+    #           '05-2016-CA-036436-']:
+    #     Jac().get_by_case_number(c)
+    # return 0
 
 
 if __name__ == '__main__':
