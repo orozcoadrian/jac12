@@ -10,6 +10,6 @@ install:
   - pip install robobrowser
   - pip install xlwt
 script:
-    - pytest --cov main --verbose
+    - pytest --cov app --verbose
 after_success:
     - coveralls
