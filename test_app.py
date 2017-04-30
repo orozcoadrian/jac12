@@ -11,7 +11,7 @@ class MyTestCase(unittest.TestCase):
                          'http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html')
 
     def test_foreclosures_response(self):
-        with open('foreclosures_resp.html', 'rb') as myfile:
+        with open('test_resources/foreclosures_resp.html', 'rb') as myfile:
             rows = Foreclosures().get_rows_from_response(myfile.read())
             self.assertEqual(len(rows), 3)
             self.assertEqual(rows, [{'case_number': '05-2008-CA-006267-XXXX-XX',
@@ -47,7 +47,7 @@ class MyTestCase(unittest.TestCase):
                          'https://brevard.county-taxes.com/public/real_estate/parcels/test_taxid')
 
     def test_taxes_response(self):
-        with open('taxes_resp.html', 'rb') as myfile:
+        with open('test_resources/taxes_resp.html', 'rb') as myfile:
             ret = Taxes(None).get_info_from_response('test_taxid', myfile.read())
             self.assertEqual(ret,
                              {'url_to_use': 'https://brevard.county-taxes.com/public/real_estate/parcels/test_taxid',
@@ -64,7 +64,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(headers, {'Accept': 'application/json'})
 
     def test_bcpao_parse_acct_by_legal_response(self):
-        with open('bcpao_resp.json', 'r') as myfile:
+        with open('test_resources/bcpao_resp.json', 'r') as myfile:
             class TestObject(object):
                 def __init__(self, status_code, text):
                     self.status_code = status_code
@@ -79,7 +79,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(ret['headers'], {'Accept': 'application/json'})
 
     def test_parse_bcpaco_item_response(self):
-        with open('bcpao_resp2.json', 'r') as myfile:
+        with open('test_resources/bcpao_resp2.json', 'r') as myfile:
             class TestObject(object):
                 def __init__(self, status_code, text):
                     self.status_code = status_code
@@ -98,7 +98,7 @@ class MyTestCase(unittest.TestCase):
                                         'txtDocTypes': ''}})
 
     def test_public_records_parse_records_grid_response(self):
-        with open('public_records_resp.html', 'rb') as myfile:
+        with open('test_resources/public_records_resp.html', 'rb') as myfile:
             ret = BclerkPublicRecords().parse_response(myfile.read())
             self.assertEqual(ret, [
                 {'t': '26', 'lt': '3', 'subd': ' WYNDHAM AT DURAN', 's': '09', 'u': None, 'blk': 'A', 'pg': '20',
@@ -128,7 +128,7 @@ class MyTestCase(unittest.TestCase):
             'url': 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm?RequestTimeout=500'})
 
     def test_bclerk_efacts_get_reg_actions_parse(self):
-        with open('bclerk_reg_response.html', 'rb') as myfile:
+        with open('test_resources/bclerk_reg_response.html', 'rb') as myfile:
             ret = BclerkEfacts().parse_reg_actions_response(myfile.read())
             self.assertEqual(ret,
                              {'orig_mtg_tag': 'OR MTG',
