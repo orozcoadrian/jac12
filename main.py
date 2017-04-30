@@ -1,5 +1,4 @@
 import argparse
-import email
 import itertools
 import json
 import locale
@@ -8,21 +7,17 @@ import os
 import pprint
 import re
 import shutil
-import smtplib
 import sys
 import time
 import urllib.parse
 import zipfile
 from datetime import datetime, date, timedelta
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.utils import COMMASPACE, formatdate
 
-import requests
 from bs4 import BeautifulSoup
-from robobrowser import RoboBrowser
 from xlwt import Workbook, easyxf, Formula
+
+from infra import BclerkEfactsInfrastructure, ForeclosuresInfrastructure, EmailInfrastructure
+from infra import FileSystemInfrastructure, BclerkPublicRecordsInfrastructure, BcpaoInfrastructure, TaxesInfrastructure
 
 
 class FilterCancelled(object):
@@ -386,11 +381,14 @@ class Xl(object):
 
 
 class Taxes(object):
+    def __init__(self, taxes_infra):
+        self.taxes_infra = taxes_infra
+
     def get_info_from_account(self, bcpao_acc):
         if len(bcpao_acc) > 0:
-            url = self.get_tax_url_from_taxid(bcpao_acc)
-            r = requests.post(url, data='', headers='', stream=True)
-            return self.get_info_from_response(bcpao_acc, r.content)
+            # taxes_infra = TaxesInfrastructure()
+            return self.get_info_from_response(bcpao_acc, self.taxes_infra.get_resp_from_req(
+                self.get_tax_url_from_taxid(bcpao_acc)))
 
     def get_info_from_response(self, tax_id, resp):
         if resp is not None:
@@ -420,6 +418,9 @@ class Taxes(object):
 
 
 class Bcpao(object):
+    def __init__(self, bcpao_infra=None):
+        self.bcpao_infra = bcpao_infra
+
     @staticmethod
     def get_parcel_data_by_acct2_request(acct):
         ret = {'url': 'https://bcpao.us/api/v1/account/' + str(acct),
@@ -478,7 +479,8 @@ class Bcpao(object):
 
     def get_bcpao_item_from_acc(self, acct):
         req = self.get_parcel_data_by_acct2_request(acct)
-        r = requests.get(req['url'], headers=req['headers'])
+        r = self.bcpao_infra.get_res_from_req(req)
+        # r = requests.get(req['url'], headers=req['headers'])
         return self.parse_bcpaco_item_response(r)
 
     @staticmethod
@@ -493,10 +495,6 @@ class Bcpao(object):
                 logger.info('START')
             sub, lot, block, pb, pg, s, t, r, subid = legal
             sub = sub.replace(u'\xc2', u'').encode('utf-8')
-            # logging.info(
-            #     'get_acct_by_legal(sub="' + str(sub) + '", lot=' + str(lot) + ', block=' + str(block) + ', pb=' + str(
-            #         pb) + ', pg=' + str(pg) + ', s=' + str(s) + ', t=' + str(t) + ', r=' + str(r) + ', subid=' + str(
-            #         subid) + ')')
             ret = ''
             if not ret:
                 url2 = 'https://bcpao.us/api/v1/search?'
@@ -515,8 +513,8 @@ class Bcpao(object):
 
     def get_acct_by_legal(self, legal_arg):
         url2, headers = self.get_acct_by_legal_request(legal_arg)
-        resp = requests.get(url2, headers=headers, verify=False, timeout=10)  # timeout in seconds
-        return self.parse_acct_by_legal_response(resp)
+        # resp = requests.get(url2, headers=headers, verify=False, timeout=10)  # timeout in seconds
+        return self.parse_acct_by_legal_response(self.bcpao_infra.get_acct_by_legal_resp_from_req(url2, headers))
 
     @staticmethod
     def parse_acct_by_legal_response(resp):
@@ -528,22 +526,6 @@ class Bcpao(object):
     @staticmethod
     def get_bcpao_query_url_by_acct(acct):
         return 'https://www.bcpao.us/PropertySearch/#/parcel/' + acct
-
-
-class BclerkPublicRecordsInfrastructure(object):
-    def get_resp_from_request(self, request_info):
-        # request_info = self.get_request_info(case)
-        browser = RoboBrowser(history=True, parser='html.parser')
-        browser.open(request_info['uri'])
-        form = browser.get_forms()[0]
-        for k, v in request_info['form'].items():
-            form[k].value = v
-        browser.submit_form(form)
-        resp = browser.response
-
-        resp_text = resp.text
-        # return self.parse_response(resp_text)
-        return resp_text
 
 
 class BclerkPublicRecords(object):
@@ -657,6 +639,10 @@ class BclerkPublicRecords(object):
 
 
 class BclerkEfacts(object):
+    def __init__(self, file_system_infra=None, bclerk_efacts_infra=None):
+        self.file_system_infra = file_system_infra
+        self.bclerk_efacts_infra = bclerk_efacts_infra
+
     @staticmethod
     def get_name():
         return 'Cfm'
@@ -765,45 +751,40 @@ class BclerkEfacts(object):
             ret['id2'] = ret['year'] + '_' + ret['court_type'] + '_' + ret['seq_number']
         return ret
 
-    def fetch(self, court_type, id2, out_dir, seq_number, year):
+    def fetch_case_info(self, court_type, id2, out_dir, seq_number, year):
         request_info = self.get_request_info(court_type, seq_number, year)
-
-        ret = dict(latest_amount_due=None, orig_mtg_link=None, orig_mtg_tag=None)
+        resp = dict(jsessionid=None)
         if request_info is not None:
-            r = requests.post(request_info['url'], request_info['data'], headers=request_info['headers'],
-                              stream=request_info['stream'], timeout=request_info['timeout'])
+            url_ = request_info['url']
+            data_ = request_info['data']
+            headers_ = request_info['headers']
+            stream_ = request_info['stream']
+            timeout_ = request_info['timeout']
+            r = self.bclerk_efacts_infra.get_case_info_resp_from_req(data_, headers_, stream_, timeout_, url_)
             resp = self.parse_resp2(r)
             if out_dir:
-                with open(out_dir + '/' + id2 + '_case_info.htm', 'wb') as handle:
-                    for bl in resp['content']:
-                        handle.write(bl)
-            jsessionid = r.cookies['JSESSIONID']
+                self.file_system_infra.save_lines_to_file(out_dir + '/' + id2 + '_case_info.htm', 'wb', resp['content'])
+                # with open(file_path, open_mode) as handle:
+                #     for bl in content_:
+                #         handle.write(bl)
+        return resp
 
-            id2 = year + '_' + court_type + '_' + seq_number
+    def fetch_reg_actions(self, court_type, jsessionid, seq_number, year, out_dir, id2):
+        reg_actions_req_info = self.get_reg_actions_req_info(court_type, jsessionid, seq_number, year)
+        url_ = reg_actions_req_info['url']
+        data_ = reg_actions_req_info['data']
+        headers_ = reg_actions_req_info['headers']
+        r_text = self.bclerk_efacts_infra.get_reg_actions_resp_from_req(data_, headers_, url_)
 
-            reg_actions_req_info = self.get_reg_actions_req_info(court_type, jsessionid, seq_number, year)
-            r = requests.get(reg_actions_req_info['url'], reg_actions_req_info['data'],
-                             headers=reg_actions_req_info['headers'], stream=True)
-            r_text = r.text
-            # logging.debug(r.ok)
-            # logging.debug(r.status_code)
-            # logging.debug('is_redirect: ' + str(r.is_redirect))
-
-            if out_dir:
-                with open(out_dir + '/' + id2 + '_reg_actions.htm', 'w') as handle:
-                    handle.write(r_text)
-            lad, tag, url = self.parse_reg_actions_response(r_text)
-
-            ret3 = {'latest_amount_due': lad, 'orig_mtg_link': url, 'orig_mtg_tag': tag}
-
-            ret4 = dict(itertools.chain(ret.items(), ret3.items()))
-            ret = ret4
-        return ret
+        if out_dir:
+            self.file_system_infra.save_content_to_file(out_dir + '/' + id2 + '_reg_actions.htm', 'w', r_text)
+        return self.parse_reg_actions_response(r_text)
 
     def parse_reg_actions_response(self, r_text):
         grid, lad = self.get_lad_url_from_rtext(r_text)
         url, tag = self.get_orig_mortgage_url_from_grid(grid)
-        return lad, tag, url
+        # return lad, tag, url
+        return {'latest_amount_due': lad, 'orig_mtg_link': url, 'orig_mtg_tag': tag}
 
     def get_reg_actions_req_info(self, court_type, jsessionid, seq_number, year):
         url = 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm?RequestTimeout=500'
@@ -839,7 +820,8 @@ class BclerkEfacts(object):
 
 
 class Jac(object):
-    def __init__(self):
+    def __init__(self, email_infra=None):
+        self.email_infra = email_infra
         logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
         # logger = logging.getLogger(__name__)
 
@@ -868,11 +850,14 @@ class Jac(object):
         dataset = sheet_builder.add_sheet(mrs)
         return dataset
 
-    def fill_by_case_number(self, out_dir_htm, r):
-        bclerk_efacts = BclerkEfacts()
+    @staticmethod
+    def fill_by_case_number(out_dir_htm, r):
+        bclerk_efacts = BclerkEfacts(FileSystemInfrastructure(), BclerkEfactsInfrastructure())
         be = bclerk_efacts.pre_cache(r['case_number'], out_dir_htm)
-        bclerk_efacts_info = bclerk_efacts.fetch(be['court_type'], be['id2'], be['out_dir'],
-                                                 be['seq_number'], be['year'])
+        be2 = bclerk_efacts.fetch_case_info(be['court_type'], be['id2'], be['out_dir'],
+                                            be['seq_number'], be['year'])
+        bclerk_efacts_info = bclerk_efacts.fetch_reg_actions(be['court_type'], be2['jsessionid'],
+                                                             be['seq_number'], be['year'], be['out_dir'], be['id2'])
         r['latest_amount_due'] = bclerk_efacts_info['latest_amount_due']
         r['orig_mtg_link'] = bclerk_efacts_info['orig_mtg_link']
         r['orig_mtg_tag'] = bclerk_efacts_info['orig_mtg_tag']
@@ -880,16 +865,15 @@ class Jac(object):
         bclerk_public_records.fetch(r['case_number'])
         r['legal'] = bclerk_public_records.legal
         r['legals'] = bclerk_public_records.legals
-        bcpao = Bcpao()
+        bcpao = Bcpao(BcpaoInfrastructure())
         bcpao_info = bcpao.get_bcpao_acc_from_legal(r['legal'], r['legals'])
         r['bcpao_acc'] = bcpao_info['bcpao_acc']
         if r['bcpao_acc'] is None:
             r['bcpao_acc'] = ''
-        # r['bcpao_accs'] = bcpao_info['bcpao_accs']
         r['bcpao_item'] = bcpao.get_bcpao_item_from_acc(r['bcpao_acc'])
         if r['bcpao_item'] is None:
             r['bcpao_item'] = {}
-        taxes = Taxes()
+        taxes = Taxes(TaxesInfrastructure())
         taxes_info = taxes.get_info_from_account(r['bcpao_acc'])
         if taxes_info is not None:
             r['taxes_value'] = taxes_info['value_to_use']
@@ -923,34 +907,8 @@ class Jac(object):
         message_text = body  # 'Test6'+' '+file_path
         message_subject = subject  # 'Subject6'
         username = 'orozcoadrian'
-        self.send_mail(username, password, fromaddr, toaddr, message_subject, message_text, file_paths,
-                       'smtp.gmail.com:587')
-
-    @staticmethod
-    def send_mail(username, password, send_from, send_to, subject, text, files, server="localhost"):
-        assert isinstance(send_to, list)
-        assert isinstance(files, list)
-
-        msg = MIMEMultipart('alternative')
-        msg['From'] = send_from
-        msg['To'] = COMMASPACE.join(send_to)
-        msg['Date'] = formatdate(localtime=True)
-        msg['Subject'] = subject
-
-        msg.attach(MIMEText(text, 'html'))
-
-        for f in files:
-            part = MIMEBase('application', "octet-stream")
-            part.set_payload(open(f, "rb").read())
-            email.encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(f))
-            msg.attach(part)
-
-        smtp = smtplib.SMTP(server)
-        smtp.starttls()
-        smtp.login(username, password)
-        smtp.sendmail(send_from, send_to, msg.as_string())
-        smtp.close()
+        self.email_infra.send_mail(username, password, fromaddr, toaddr, message_subject, message_text, file_paths,
+                                   'smtp.gmail.com:587')
 
     @staticmethod
     def get_date_strings_to_add(dates):
@@ -975,7 +933,7 @@ class Jac(object):
 
         logging.info('args: ' + str(args))
 
-        s = Foreclosures()
+        s = Foreclosures(ForeclosuresInfrastructure())
         mrs = s.get_items()
         all_foreclosures = mrs[:]
 
@@ -1076,9 +1034,13 @@ class MyDate(object):
 
 
 class Foreclosures(object):
+    def __init__(self, fore_infra=None):
+        self.fore_infra = fore_infra
+
     def get_items(self):
-        r = requests.get(self.get_request_url())
-        return self.get_rows_from_response(r.content)
+        url = self.get_request_url()
+        content = self.fore_infra.get_items_resp_from_req(url)
+        return self.get_rows_from_response(content)
 
     @staticmethod
     def get_request_url():
@@ -1115,7 +1077,7 @@ class Foreclosures(object):
 
 
 def main():
-    return Jac().go()
+    return Jac(EmailInfrastructure()).go()
     # for c in ['05-2008-CA-006267-',
     #           '05-2012-CA-025704-',
     #           '05-2014-CA-019884-',

@@ -42,12 +42,12 @@ class MyTestCase(unittest.TestCase):
                          ['04.26.17', '05.03.17'])
 
     def test_taxes_request(self):
-        self.assertEqual(Taxes().get_tax_url_from_taxid('test_taxid'),
+        self.assertEqual(Taxes(None).get_tax_url_from_taxid('test_taxid'),
                          'https://brevard.county-taxes.com/public/real_estate/parcels/test_taxid')
 
     def test_taxes_response(self):
         with open('taxes_resp.html', 'rb') as myfile:
-            ret = Taxes().get_info_from_response('test_taxid', myfile.read())
+            ret = Taxes(None).get_info_from_response('test_taxid', myfile.read())
             self.assertEqual(ret,
                              {'url_to_use': 'https://brevard.county-taxes.com/public/real_estate/parcels/test_taxid',
                               'value_to_use': '859.99'})
@@ -84,7 +84,7 @@ class MyTestCase(unittest.TestCase):
                     self.status_code = status_code
                     self.text = text
 
-            ret = Bcpao().parse_bcpaco_item_response(TestObject(status_code=200, text=myfile.read()))
+            ret = Bcpao(None).parse_bcpaco_item_response(TestObject(status_code=200, text=myfile.read()))
             self.assertEqual(ret, {'address': '2778 WYNDHAM WAY MELBOURNE FL 32940', 'zip_code': '32940',
                                    'frame code': 'MASNRYCONC, WOOD FRAME', 'year built': '2007',
                                    'total base area': '4441', 'latest market value total': '$943,700.00'})
@@ -128,23 +128,14 @@ class MyTestCase(unittest.TestCase):
 
     def test_bclerk_efacts_get_reg_actions_parse(self):
         with open('bclerk_reg_response.html', 'rb') as myfile:
-            lad, tag, url = BclerkEfacts().parse_reg_actions_response(myfile.read())
-            self.assertEqual(lad,
-                             'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7tioo4AAF5DuCsZjF66dIw==&theKey=14mhPOwb8DAlMYwyf4HSrg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997')
-            self.assertEqual(tag, 'OR MTG')
-            self.assertEqual(url,
-                             'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=rbBXye6I4qu58q/YufJbBA==&theKey=mfLJJALQq7FewO9aj6kDPQ==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997')
+            ret = BclerkEfacts().parse_reg_actions_response(myfile.read())
+            self.assertEqual(ret,
+                             {'orig_mtg_tag': 'OR MTG',
+                              'orig_mtg_link': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=rbBXye6I4qu58q/YufJbBA==&theKey=mfLJJALQq7FewO9aj6kDPQ==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
+                              'latest_amount_due': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7tioo4AAF5DuCsZjF66dIw==&theKey=14mhPOwb8DAlMYwyf4HSrg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997'})
 
     def test_xlbuilder_with_rows(self):
         instance = XlBuilder('test_name')
-        # records = [MyRecord.MyRecord({
-        #     'case_number': 'cn0'
-        #     , 'case_title': 'ct0'
-        #     , 'foreclosure_sale_date': '2'
-        #     , 'count': '2'
-        #     , 'comment': ''
-        #     , 'taxes_value': ''
-        # })]
         data_set = instance.add_sheet([{'case_number': '05-2008-CA-033772-XXXX-XX',
                                         'taxes_url': 'https://brevard.county-taxes.com/public/real_estate/parcels/2627712',
                                         'comment': '\xa0', 'taxes_value': '0', 'legals': [],
@@ -162,8 +153,6 @@ class MyTestCase(unittest.TestCase):
                                                   'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH',
                                                   't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'}])
         self.assertTrue(data_set is not None)
-        print(data_set.get_items())
-        # for row in data_set.get_items():
         header_row = data_set.get_items()[0]
         self.assertEqual(21, len(header_row))
         self.assertEqual('high', header_row[0].get_display())
