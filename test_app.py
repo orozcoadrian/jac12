@@ -1,7 +1,8 @@
 import unittest
 from datetime import date
 
-from main import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords, BclerkEfacts, XlBuilder
+from app import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords, BclerkEfacts, XlBuilder, FilterCancelled, \
+    FilterByDates, Item
 
 
 class MyTestCase(unittest.TestCase):
@@ -198,6 +199,27 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(None, first_data_row[18].get_display())
         self.assertEqual('OR MTG', first_data_row[19].get_display())
         self.assertEqual('0', first_data_row[20].get_display())
+
+    def test_FilterCancelled(self):
+        ret = FilterCancelled(None).apply([dict(comment='', val=2), dict(comment='CANCELLED', val=3)])
+        self.assertEquals(ret, [{'comment': '', 'val': 2}])
+
+    def test_FilterByDates(self):
+        filter_by_dates = FilterByDates()
+        filter_by_dates.set_dates([date(2017, 4, 26), date(2017, 5, 3)])
+        ret = filter_by_dates.apply(
+            [dict(foreclosure_sale_date=date(2017, 4, 26), val=2), dict(foreclosure_sale_date=date(2017, 4, 30), val=3),
+             dict(foreclosure_sale_date=date(2017, 5, 3), val=4)])
+        self.assertEquals(ret, [{'foreclosure_sale_date': date(2017, 4, 26), 'val': 2},
+                                {'foreclosure_sale_date': date(2017, 5, 3), 'val': 4}])
+
+    def test_get_id2(self):
+        self.assertEquals(Item.pre_cache2('05-2008-CA-006267-'), {'court_type': 'CA',
+                                                                  'id2': '2008_CA_006267',
+                                                                  'seq_number': '006267', 'year': '2008'})
+        self.assertEquals(Item.pre_cache2('05-2008-CA-006267-XXXX-XX'), {'court_type': 'CA',
+                                                                         'id2': '2008_CA_006267',
+                                                                         'seq_number': '006267', 'year': '2008'})
 
 
 if __name__ == '__main__':
