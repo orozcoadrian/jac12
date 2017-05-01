@@ -488,6 +488,7 @@ class Bcpao(object):
         return ret
 
     def get_acct_by_legal(self, legal_arg):
+        logging.info('getting bcpao from legal: "' + legal_arg['legal_desc'] + '"')
         ret = self.get_acct_by_legal_request(legal_arg)
         if ret is not None:
             return self.parse_acct_by_legal_response(

@@ -223,6 +223,25 @@ class MyTestCase(unittest.TestCase):
                                                                          'id2': '2008_CA_006267',
                                                                          'seq_number': '006267', 'year': '2008'})
 
+    def test_get_legal_from_str(self):
+        ret = BclerkPublicRecords.get_legal_from_str('LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH')
+        self.assertEquals(ret, {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
+                                'r': '36', 'subd': ' WYNDHAM AT DURAN',
+                                'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH',
+                                't': '26', 'subid': 'UH'})
+
+        # current limitation: not processing the following correctly in legal descriptions:
+        #    S 67 FT
+        #    N 23 FT OF E 45.67 FT
+        # can't just ignore them cause that might result in a different property?
+        ret = BclerkPublicRecords.get_legal_from_str(
+            'LT 11 BLK 3 PB 11 PG 39 WESTFIELD ESTATES SUB S 67 FT S 05 T 22 R 35 SUBID 04')
+        self.assertEquals(ret, {'blk': '3',
+                                'legal_desc': 'LT 11 BLK 3 PB 11 PG 39 WESTFIELD ESTATES SUB S 67 FT S 05 T '
+                                              '22 R 35 SUBID 04', 'lt': '11', 'pb': '11', 'pg': '39', 'r': '35',
+                                's': '05', 'subd': ' WESTFIELD ESTATES SUB S 67 FT', 'subid': '04', 't': '22',
+                                'u': None})
+
 
 if __name__ == '__main__':
     unittest.main()
