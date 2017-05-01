@@ -462,6 +462,7 @@ class Bcpao(object):
 
     @staticmethod
     def get_acct_by_legal_request(legal_arg):
+        ret = None
         if 'subd' in legal_arg or 't' in legal_arg:
             legal = (legal_arg['subd'], legal_arg['lt'], legal_arg['blk'], legal_arg['pb'], legal_arg['pg'],
                      legal_arg['s'], legal_arg['t'], legal_arg['r'], legal_arg['subid'])
@@ -472,25 +473,25 @@ class Bcpao(object):
                 logger.info('START')
             sub, lot, block, pb, pg, s, t, r, subid = legal
             sub = sub.replace(u'\xc2', u'').encode('utf-8')
-            ret = ''
-            if not ret:
-                url2 = 'https://bcpao.us/api/v1/search?'
-                if lot is not None:
-                    url2 += 'lot=' + str(lot)
-                if block is not None:
-                    url2 += '&blk=' + str(block)
-                if pb is not None:
-                    url2 += '&platbook=' + str(pb)
-                if pg is not None:
-                    url2 += '&platpage=' + str(pg)
-                url2 += '&subname=' + urllib.parse.quote(sub)
-                url2 += '&activeonly=true&size=10&page=1'
-
-                return url2, {'Accept': 'application/json'}
+            url2 = 'https://bcpao.us/api/v1/search?'
+            if lot is not None:
+                url2 += 'lot=' + str(lot)
+            if block is not None:
+                url2 += '&blk=' + str(block)
+            if pb is not None:
+                url2 += '&platbook=' + str(pb)
+            if pg is not None:
+                url2 += '&platpage=' + str(pg)
+            url2 += '&subname=' + urllib.parse.quote(sub)
+            url2 += '&activeonly=true&size=10&page=1'
+            ret = {'url2': url2, 'headers': {'Accept': 'application/json'}}
+        return ret
 
     def get_acct_by_legal(self, legal_arg):
-        url2, headers = self.get_acct_by_legal_request(legal_arg)
-        return self.parse_acct_by_legal_response(self.bcpao_infra.get_acct_by_legal_resp_from_req(url2, headers))
+        ret = self.get_acct_by_legal_request(legal_arg)
+        if ret is not None:
+            return self.parse_acct_by_legal_response(
+                self.bcpao_infra.get_acct_by_legal_resp_from_req(ret['url2'], ret['headers']))
 
     @staticmethod
     def parse_acct_by_legal_response(resp):
@@ -850,7 +851,8 @@ class Jac(object):
         self.bcpr_infra = bcpr_infra
         self.taxes_infra = taxes_infra
         self.bcpao_infra = bcpao_infra
-        logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
+        logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG,
+                            stream=sys.stdout)
 
     def get_mainsheet_dataset(self, mrs, out_dir, date_string_to_add):
         logging.info('**get_mainsheet_dataset: ' + date_string_to_add)
@@ -878,6 +880,7 @@ class Jac(object):
         return dataset
 
     def fill_by_case_number(self, out_dir_htm, r):
+        logging.info('case_number: ' + r['case_number'])
         bclerk_efacts = BclerkEfacts(self.file_system_infra, self.bclerk_efacts_infra)
         be = bclerk_efacts.pre_cache(r['case_number'], out_dir_htm)
         be2 = bclerk_efacts.fetch_case_info(be['court_type'], be['id2'], be['out_dir'],
@@ -986,7 +989,7 @@ class Jac(object):
         logging.info('date_strings_to_add: ' + str(date_strings_to_add))
         logging.info('abc: ' + abc)
         # mrs = [mrs[1]]  # temp hack
-        mrs = [mrs[3]]  # temp hack
+        # mrs = mrs[:3]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in date_strings_to_add])
 
         for dataset in datasets:
@@ -1003,6 +1006,21 @@ class Jac(object):
         body += '<a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> '
         body += 'as of now: <br>' + date_counts
         body += '<br><br>' + filename
+
+        no_addr = [x for x in mrs if
+                   'bcpao_item' in x and ('address' not in x['bcpao_item'] or len(x['bcpao_item']['address']) == 0)]
+        ids = []
+        # pprint.pprint(no_addr)
+        for x in no_addr:
+            id_to_show = 'count_id: ' + str(x['count']) + ', ' + x['case_number']
+            if 'legal' in x and 'legal_desc' in x['legal']:
+                id_to_show += ', "' + x['legal']['legal_desc'] + '"'
+            if 'legals' in x:
+                for l in x['legals']:
+                    if 'legal_desc' in l:
+                        id_to_show += '\n                                        "' + l['legal_desc'] + '"'
+            ids.append(id_to_show)
+        body += "\n\n</br></br>could not get addresses for the following: \n" + '\n'.join(ids)
 
         file_paths = [out_file]
         if args.zip:
@@ -1026,6 +1044,7 @@ class Jac(object):
             self.my_send_mail(file_paths, args.passw, subject, body)
 
         logging.info(body)
+
         logging.info('duration %s' % timedelta(seconds=time.time() - start))
         logging.info('END')
         return 0

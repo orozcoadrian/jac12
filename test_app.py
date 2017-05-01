@@ -54,14 +54,16 @@ class MyTestCase(unittest.TestCase):
                               'value_to_use': '859.99'})
 
     def test_bcpao_get_acct_by_legal(self):
-        url, headers = Bcpao().get_acct_by_legal_request(
+        ret = Bcpao().get_acct_by_legal_request(
             {'t': '26', 'subd': ' WYNDHAM AT DURAN', 'u': None, 'r': '36', 'pb': '53',
              'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH', 'pg': '20', 'lt': '3',
              'blk': 'A', 'subid': 'UH', 's': '09'})
-        self.assertEqual(url, 'https://bcpao.us/api/v1/search?'
-                              'lot=3&blk=A&platbook=53&platpage=20&'
-                              'subname=%20WYNDHAM%20AT%20DURAN&activeonly=true&size=10&page=1')
-        self.assertEqual(headers, {'Accept': 'application/json'})
+        self.assertEquals(ret, {'headers': {'Accept': 'application/json'},
+                                'url2': 'https://bcpao.us/api/v1/search?lot=3&blk=A&platbook=53&platpage=20&subname=%20WYNDHAM%20AT%20DURAN&activeonly=true&size=10&page=1'})
+
+    def test_bcpao_get_acct_by_legal2(self):
+        ret = Bcpao().get_acct_by_legal_request({'legal_desc': 'NO LAND DESCRIBED'})
+        self.assertEquals(ret, None)
 
     def test_bcpao_parse_acct_by_legal_response(self):
         with open('test_resources/bcpao_resp.json', 'r') as myfile:
