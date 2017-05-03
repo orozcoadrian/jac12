@@ -449,10 +449,11 @@ class Bcpao(object):
         legals2 = [legal]
         legals2.extend(legals)
         for l in legals2:
-            acc = self.get_acct_by_legal(l)
-            if acc is not None:
-                ret['bcpao_acc'] = acc
-                break
+            if l is not None:
+                acc = self.get_acct_by_legal(l)
+                if acc is not None:
+                    ret['bcpao_acc'] = acc
+                    break
         return ret
 
     def get_bcpao_item_from_acc(self, acct):
@@ -560,29 +561,30 @@ class BclerkPublicRecords(object):
         rets = []
         soup = BeautifulSoup(resp_text, "html.parser")
         adr = soup.find('table', id='dgResults')
-        items = []
-        col_names = []
-        trs = adr.findAll("tr")
-        for r, a in enumerate(trs):
-            if r != 0 and r != len(trs) - 1:
-                current_item = {}
-                for c, d in enumerate(a.findAll("td")):
-                    if r == 1:
-                        col_names.append(d.get_text(strip=True))
-                    else:
-                        current_item[col_names[c]] = d.get_text(strip=True)
-                if r > 1:
-                    items.append(current_item)
-        rows = items
-        lds = set()
-        for row in rows:
-            if row['First Legal'] and len(row['First Legal']) > 0:
-                lds.add(row['First Legal'])
-        for ld in lds:
-            legal_desc = ld.strip()
-            temp = self.get_legal_from_str(legal_desc)
-            if temp:
-                rets.append(dict(temp.items()))
+        if adr is not None:
+            items = []
+            col_names = []
+            trs = adr.findAll("tr")
+            for r, a in enumerate(trs):
+                if r != 0 and r != len(trs) - 1:
+                    current_item = {}
+                    for c, d in enumerate(a.findAll("td")):
+                        if r == 1:
+                            col_names.append(d.get_text(strip=True))
+                        else:
+                            current_item[col_names[c]] = d.get_text(strip=True)
+                    if r > 1:
+                        items.append(current_item)
+            rows = items
+            lds = set()
+            for row in rows:
+                if row['First Legal'] and len(row['First Legal']) > 0:
+                    lds.add(row['First Legal'])
+            for ld in lds:
+                legal_desc = ld.strip()
+                temp = self.get_legal_from_str(legal_desc)
+                if temp:
+                    rets.append(dict(temp.items()))
         return rets
 
     def fetch(self, case_number_):
@@ -691,13 +693,15 @@ class BclerkEfacts(object):
         ret = None
         valid_patterns_for_original_mortgage = ['NOTICE FILING ORIG NOTE & MTG', 'OR MTG', 'MTG & ORIG', 'COPY OF MTG',
                                                 'ORIGINAL NOTE & MORTGAGE DEED', 'NTC FILING ORIG NOTE &/OR MTG',
-                                                'NOTICE OF FILING ORIGINAL NOTE', 'ORIGINAL NOTE & MORTGAGE']
+                                                'NOTICE OF FILING ORIGINAL NOTE', 'ORIGINAL NOTE & MORTGAGE',
+                                                'ER: F/J FCL']
         x = None
         for x in valid_patterns_for_original_mortgage:
             ret = self.get_orig_mortgage_url_from_grid2(gr, x)
             if ret:
                 break
-
+            else:
+                x = None  # reset loop variable so we don't return it
         return ret, x
 
     @staticmethod
@@ -1008,20 +1012,7 @@ class Jac(object):
         body += 'as of now: <br>' + date_counts
         body += '<br><br>' + filename
 
-        no_addr = [x for x in mrs if
-                   'bcpao_item' in x and ('address' not in x['bcpao_item'] or len(x['bcpao_item']['address']) == 0)]
-        ids = []
-        # pprint.pprint(no_addr)
-        for x in no_addr:
-            id_to_show = 'count_id: ' + str(x['count']) + ', ' + x['case_number']
-            if 'legal' in x and 'legal_desc' in x['legal']:
-                id_to_show += ', "' + x['legal']['legal_desc'] + '"'
-            if 'legals' in x:
-                for l in x['legals']:
-                    if 'legal_desc' in l:
-                        id_to_show += '\n                                        "' + l['legal_desc'] + '"'
-            ids.append(id_to_show)
-        body += "\n\n</br></br>could not get addresses for the following: \n" + '\n'.join(ids)
+        body += self.get_no_addr_str(mrs)
 
         file_paths = [out_file]
         if args.zip:
@@ -1050,7 +1041,26 @@ class Jac(object):
         logging.info('END')
         return 0
 
+    @staticmethod
+    def get_no_addr_str(mrs):
+        no_addr = [x for x in mrs if
+                   'bcpao_item' in x and ('address' not in x['bcpao_item'] or len(x['bcpao_item']['address']) == 0)]
+        ids = []
+        for x in no_addr:
+            id_to_show = 'count_id: ' + str(x['count']) + ', ' + x['case_number']
+            if x is not None and 'legal' in x and x['legal'] is not None and 'legal_desc' in x['legal']:
+                id_to_show += ', "' + x['legal']['legal_desc'] + '"'
+            if 'legals' in x:
+                for l in x['legals']:
+                    if 'legal_desc' in l:
+                        id_to_show += '\n                                        "' + l['legal_desc'] + '"'
+            ids.append(id_to_show)
+        no_addr_str = ''
+        if len(ids) > 0:
+            no_addr_str = "\n\n</br></br>could not get addresses for the following: \n" + '\n'.join(ids)
+        return no_addr_str
+
     def get_by_case_number(self, case_number):
         r = {'case_number': case_number}
         self.fill_by_case_number(None, r)
-        print(r)
+        print('r: ' + str(r))
