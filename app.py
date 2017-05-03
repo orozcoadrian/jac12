@@ -994,7 +994,7 @@ class Jac(object):
         logging.info('date_strings_to_add: ' + str(date_strings_to_add))
         logging.info('abc: ' + abc)
         # mrs = [mrs[1]]  # temp hack
-        # mrs = mrs[:3]  # temp hack
+        mrs = mrs[:3]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in date_strings_to_add])
 
         for dataset in datasets:
@@ -1047,17 +1047,17 @@ class Jac(object):
                    'bcpao_item' in x and ('address' not in x['bcpao_item'] or len(x['bcpao_item']['address']) == 0)]
         ids = []
         for x in no_addr:
-            id_to_show = 'count_id: ' + str(x['count']) + ', ' + x['case_number']
+            id_to_show = 'count_id: ' + str(x['count']) + ', ' + x['case_number'] + '</br>\n'
             if x is not None and 'legal' in x and x['legal'] is not None and 'legal_desc' in x['legal']:
-                id_to_show += ', "' + x['legal']['legal_desc'] + '"'
+                id_to_show += '"' + x['legal']['legal_desc'] + '"'
             if 'legals' in x:
                 for l in x['legals']:
                     if 'legal_desc' in l:
-                        id_to_show += '\n                                        "' + l['legal_desc'] + '"'
+                        id_to_show += '<br>\n"' + l['legal_desc'] + '"'
             ids.append(id_to_show)
         no_addr_str = ''
         if len(ids) > 0:
-            no_addr_str = "\n\n</br></br>could not get addresses for the following: \n" + '\n'.join(ids)
+            no_addr_str = "\n\n</br></br>could not get addresses for the following: </br>\n" + '</br>\n'.join(ids)
         return no_addr_str
 
     def get_by_case_number(self, case_number):

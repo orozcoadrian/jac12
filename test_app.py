@@ -282,8 +282,8 @@ class MyTestCase(unittest.TestCase):
                                                 'legal_desc': 'LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH',
                                                 't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'}
                                      ])
-        self.assertEquals(ret, '\n\n</br></br>could not get addresses for the following: \n'
-                               'count_id: 2, 05-2008-CA-033772-XXXX-XX, "LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH"')
+        self.assertEquals(ret,
+                          '\n\n</br></br>could not get addresses for the following: </br>\ncount_id: 2, 05-2008-CA-033772-XXXX-XX</br>\n"LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH"')
 
 
 if __name__ == '__main__':

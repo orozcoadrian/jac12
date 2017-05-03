@@ -86,7 +86,7 @@ class EmailInfrastructure(object):
         assert isinstance(send_to, list)
         assert isinstance(files, list)
 
-        msg = MIMEMultipart('alternative')
+        msg = MIMEMultipart()
         msg['From'] = send_from
         msg['To'] = COMMASPACE.join(send_to)
         msg['Date'] = formatdate(localtime=True)
