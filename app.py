@@ -332,6 +332,9 @@ class Xl(object):
 
     def add_data_set_sheet(self, ds, book):
         sheet = book.add_sheet(ds.get_name())
+        self.add_data_set_sheet2(ds, sheet)
+
+    def add_data_set_sheet2(self, ds, sheet):
         for iX, itemX in enumerate(ds.get_items()):
             row = sheet.row(iX)
             for iY, itemY in enumerate(itemX):
