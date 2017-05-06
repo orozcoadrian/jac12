@@ -970,10 +970,7 @@ class Jac(object):
 
         dates = MyDate().get_next_dates(date.today())
         logging.info(dates)
-        dates_to_add = dates  # [0:2]
-        date_strings_to_add = dates_to_add
-        # date_strings_to_add = [date_strings_to_add[0]]  # temp hack
-        short_date_strings_to_add = self.get_short_date_strings_to_add(dates_to_add)
+        short_date_strings_to_add = self.get_short_date_strings_to_add(dates)
         logging.info('short_date_strings_to_add: ' + str(short_date_strings_to_add))
 
         abc = '-'.join(short_date_strings_to_add[0:1])
@@ -983,17 +980,17 @@ class Jac(object):
         os.makedirs(out_dir)
         logging.info(os.path.abspath(out_dir))
 
-        the_tag = abc  # timestamp
+        the_tag = abc
         filename = the_tag + '.xls'
         out_file = out_dir + '/' + filename
         book = Workbook()
 
         datasets = []
-        logging.info('date_strings_to_add: ' + str(date_strings_to_add))
+        logging.info('date_strings_to_add: ' + str(dates))
         logging.info('abc: ' + abc)
         # mrs = [mrs[1]]  # temp hack
         mrs = mrs[:3]  # temp hack
-        datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in date_strings_to_add])
+        datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in dates])
 
         for dataset in datasets:
             Xl().add_data_set_sheet(dataset, book)
