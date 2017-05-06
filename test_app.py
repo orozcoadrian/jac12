@@ -240,43 +240,6 @@ class MyTestCase(unittest.TestCase):
                                 's': '05', 'subd': ' WESTFIELD ESTATES SUB S 67 FT', 'subid': '04', 't': '22',
                                 'u': None})
 
-    def test_jac_get_no_addr_str(self):
-        ret = Jac().get_no_addr_str([{'case_number': '05-2008-CA-033772-XXXX-XX',
-                                      'taxes_url': 'https://brevard.county-taxes.com/pubte/parcels/2627712',
-                                      'comment': '\xa0', 'taxes_value': '0', 'legals': [],
-                                      'bcpao_item': {'frame code': 'MASNRYCONC, WOOD FRAME', 'zip_code': '32940',
-                                                     'year built': '2007', 'latest market value total': '$943,700.00',
-                                                     'address': '2778 WYNDHAM WAY MELBOURNE FL 32940',
-                                                     'total base area': '4441'},
-                                      'foreclosure_sale_date': '2017-04-26',
-                                      'orig_mtg_link': 'http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997',
-                                      'bcpao_acc': '2627712', 'orig_mtg_tag': 'OR MTG',
-                                      'latest_amount_due': 'http://199.241.8.22xqhnLZXlXUw==&uid=999999997',
-                                      'count': 2,
-                                      'legal': {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
-                                                'r': '36', 'subd': ' WYNDHAM AT DURAN',
-                                                'legal_desc': 'LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH',
-                                                't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'},
-                                     {'case_number': '05-2008-CA-033772-XXXX-XX',
-                                      'taxes_url': 'https://brevard.county-taxes.com/pubte/parcels/2627712',
-                                      'comment': '\xa0', 'taxes_value': '0', 'legals': [],
-                                      'bcpao_item': {'frame code': 'MASNRYCONC, WOOD FRAME', 'zip_code': '32940',
-                                                     'year built': '2007', 'latest market value total': '$943,700.00',
-                                                     'address': '',
-                                                     'total base area': '4441'},
-                                      'foreclosure_sale_date': '2017-04-26',
-                                      'orig_mtg_link': 'http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997',
-                                      'bcpao_acc': '2627712', 'orig_mtg_tag': 'OR MTG',
-                                      'latest_amount_due': 'http://199.241.8.22xqhnLZXlXUw==&uid=999999997',
-                                      'count': 2,
-                                      'legal': {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
-                                                'r': '36', 'subd': ' WYNDHAM AT DURAN',
-                                                'legal_desc': 'LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH',
-                                                't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'}
-                                     ])
-        self.assertEquals(ret,
-                          '\n\n</br></br>could not get addresses for the following: </br>\ncount_id: 2, 05-2008-CA-033772-XXXX-XX</br>\n"LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH"')
-
     def test_Xl_add_data_set_sheet(self):
         self.maxDiff = None
 
@@ -385,6 +348,48 @@ class MyTestCase(unittest.TestCase):
         ret = Jac().get_non_cancelled_nums(None, [{'comment': '', 'foreclosure_sale_date': date(2017, 4, 26)},
                                                   {'comment': 'CANCELLED', 'foreclosure_sale_date': date(2017, 4, 27)}])
         self.assertEquals('{datetime.date(2017/4/26: 1}', ret)
+
+    def test_jac_get_email_body(self):
+        mrs = [{'case_number': '05-2008-CA-033772-XXXX-XX',
+                'taxes_url': 'https://brevard.county-taxes.com/pubte/parcels/2627712',
+                'comment': '\xa0', 'taxes_value': '0', 'legals': [],
+                'bcpao_item': {'frame code': 'MASNRYCONC, WOOD FRAME', 'zip_code': '32940',
+                               'year built': '2007', 'latest market value total': '$943,700.00',
+                               'address': '2778 WYNDHAM WAY MELBOURNE FL 32940',
+                               'total base area': '4441'},
+                'foreclosure_sale_date': '2017-04-26',
+                'orig_mtg_link': 'http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997',
+                'bcpao_acc': '2627712', 'orig_mtg_tag': 'OR MTG',
+                'latest_amount_due': 'http://199.241.8.22xqhnLZXlXUw==&uid=999999997',
+                'count': 2,
+                'legal': {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
+                          'r': '36', 'subd': ' WYNDHAM AT DURAN',
+                          'legal_desc': 'LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH',
+                          't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'},
+               {'case_number': '05-2008-CA-033772-XXXX-XX',
+                'taxes_url': 'https://brevard.county-taxes.com/pubte/parcels/2627712',
+                'comment': '\xa0', 'taxes_value': '0', 'legals': [],
+                'bcpao_item': {'frame code': 'MASNRYCONC, WOOD FRAME', 'zip_code': '32940',
+                               'year built': '2007', 'latest market value total': '$943,700.00',
+                               'address': '',
+                               'total base area': '4441'},
+                'foreclosure_sale_date': '2017-04-26',
+                'orig_mtg_link': 'http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997',
+                'bcpao_acc': '2627712', 'orig_mtg_tag': 'OR MTG',
+                'latest_amount_due': 'http://199.241.8.22xqhnLZXlXUw==&uid=999999997',
+                'count': 2,
+                'legal': {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
+                          'r': '36', 'subd': ' WYNDHAM AT DURAN',
+                          'legal_desc': 'LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH',
+                          't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'}
+               ]
+        ret = Jac().get_email_body('test_abc', 'test_date_counts', 'test_filename', mrs)
+        self.assertEquals(
+            'this result is for: test_abc<br>total records: 2<br><br>the following summarizes how many not-cancelled items there are per month in the <a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> as of now: <br>test_date_counts<br><br>test_filename\n'
+            '\n'
+            '<br><br>could not get addresses for the following: <br>\n'
+            'count_id: 2, 05-2008-CA-033772-XXXX-XX<br>\n'
+            '"LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH"', ret)
 
 
 if __name__ == '__main__':

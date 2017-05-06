@@ -988,26 +988,17 @@ class Jac(object):
         datasets = []
         logging.info('date_strings_to_add: ' + str(dates))
         logging.info('abc: ' + abc)
-        # mrs = [mrs[1]]  # temp hack
-        mrs = mrs[:3]  # temp hack
+        # mrs = [mrs[0]]  # temp hack
+        # mrs = mrs[:0]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in dates])
 
         for dataset in datasets:
             Xl().add_data_set_sheet(dataset, book)
         book.save(out_file)
 
-        body = 'this result is for: ' + abc
-        body += '<br>total records: ' + str(len(mrs))
-
         date_counts = self.get_non_cancelled_nums(args, all_foreclosures)
 
-        body += '<br><br>'
-        body += 'the following summarizes how many not-cancelled items there are per month in the '
-        body += '<a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> '
-        body += 'as of now: <br>' + date_counts
-        body += '<br><br>' + filename
-
-        body += self.get_no_addr_str(mrs)
+        body = self.get_email_body(abc, date_counts, filename, mrs)
 
         file_paths = [out_file]
         if args.zip:
@@ -1036,13 +1027,24 @@ class Jac(object):
         logging.info('END')
         return 0
 
+    def get_email_body(self, abc, date_counts, filename, mrs):
+        body = 'this result is for: ' + abc
+        body += '<br>total records: ' + str(len(mrs))
+        body += '<br><br>'
+        body += 'the following summarizes how many not-cancelled items there are per month in the '
+        body += '<a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> '
+        body += 'as of now: <br>' + date_counts
+        body += '<br><br>' + filename
+        body += self.get_no_addr_str(mrs)
+        return body
+
     @staticmethod
     def get_no_addr_str(mrs):
         no_addr = [x for x in mrs if
                    'bcpao_item' in x and ('address' not in x['bcpao_item'] or len(x['bcpao_item']['address']) == 0)]
         ids = []
         for x in no_addr:
-            id_to_show = 'count_id: ' + str(x['count']) + ', ' + x['case_number'] + '</br>\n'
+            id_to_show = 'count_id: ' + str(x['count']) + ', ' + x['case_number'] + '<br>\n'
             if x is not None and 'legal' in x and x['legal'] is not None and 'legal_desc' in x['legal']:
                 id_to_show += '"' + x['legal']['legal_desc'] + '"'
             if 'legals' in x:
@@ -1052,7 +1054,7 @@ class Jac(object):
             ids.append(id_to_show)
         no_addr_str = ''
         if len(ids) > 0:
-            no_addr_str = "\n\n</br></br>could not get addresses for the following: </br>\n" + '</br>\n'.join(ids)
+            no_addr_str = "\n\n<br><br>could not get addresses for the following: <br>\n" + '<br>\n'.join(ids)
         return no_addr_str
 
     def get_by_case_number(self, case_number):
