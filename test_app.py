@@ -384,6 +384,10 @@ class MyTestCase(unittest.TestCase):
                                                   "2: TestRow({0: '', 1: 'CANCELLED', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL DOCUMENT TYPES&st=casenumber&ss=ALL DOCUMENT TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=COOK%2C%20W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(P3)),NOT(ISBLANK(Q3))), P3-Q3, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'})"
                                                   "}")
 
+    def foreclosures_test_add_foreclosures(self):
+        ret = Foreclosures.add_foreclosures(['papua', 'new', 'guinea'], 2)
+        self.assertEquals(['papua', 'new'], ret)
+
 
 if __name__ == '__main__':
     unittest.main()
