@@ -398,6 +398,45 @@ class Taxes(object):
         return ret
 
 
+class BcpaoBySubOrT(object):
+    def __init__(self, legal_arg):
+        self.request = self.get_acct_by_legal_request(legal_arg)
+
+    @staticmethod
+    def get_acct_by_legal_request(legal_arg):
+        ret = None
+        if 'subd' in legal_arg or 't' in legal_arg:
+            legal = (legal_arg['subd'], legal_arg['lt'], legal_arg['blk'], legal_arg['pb'], legal_arg['pg'],
+                     legal_arg['s'], legal_arg['t'], legal_arg['r'], legal_arg['subid'])
+            use_local_logging_config = False
+            if use_local_logging_config:
+                logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
+                logger = logging.getLogger(__name__)
+                logger.info('START')
+            sub, lot, block, pb, pg, s, t, r, subid = legal
+            sub = sub.replace(u'\xc2', u'').encode('utf-8')
+            url2 = 'https://www.bcpao.us/api/v1/search?'
+            if lot is not None:
+                url2 += 'lot=' + str(lot)
+            if block is not None:
+                url2 += '&blk=' + str(block)
+            if pb is not None:
+                url2 += '&platbook=' + str(pb)
+            if pg is not None:
+                url2 += '&platpage=' + str(pg)
+            url2 += '&subname=' + urllib.parse.quote(sub)
+            url2 += '&activeonly=true&size=10&page=1'
+            ret = {'url2': url2, 'headers': {'Accept': 'application/json'}}
+        return ret
+
+    @staticmethod
+    def parse_acct_by_legal_response(resp):
+        if resp.status_code == 200 and len(resp.text) > 0:
+            loaded_json = json.loads(resp.text)  # use req.json() instead?
+            if loaded_json and len(loaded_json) == 1:
+                return loaded_json[0]['account']
+
+
 class Bcpao(object):
     def __init__(self, bcpao_infra=None):
         self.bcpao_infra = bcpao_infra
@@ -493,10 +532,19 @@ class Bcpao(object):
 
     def get_acct_by_legal(self, legal_arg):
         logging.info('getting bcpao from legal: "' + legal_arg['legal_desc'] + '"')
-        ret = self.get_acct_by_legal_request(legal_arg)
-        if ret is not None:
-            return self.parse_acct_by_legal_response(
-                self.bcpao_infra.get_acct_by_legal_resp_from_req(ret['url2'], ret['headers']))
+        bcpao_objs = self.get_bcpao_searches(legal_arg)
+        for bcpao_search in bcpao_objs:
+            if bcpao_search.request is not None:
+                req = bcpao_search.request
+                response = bcpao_search.parse_acct_by_legal_response(
+                    self.bcpao_infra.get_acct_by_legal_resp_from_req(req['url2'], req['headers']))
+                if response is not None:
+                    return response
+
+    @staticmethod
+    def get_bcpao_searches(legal_arg):
+        bcpao_objs = [BcpaoBySubOrT(legal_arg)]
+        return bcpao_objs
 
     @staticmethod
     def parse_acct_by_legal_response(resp):

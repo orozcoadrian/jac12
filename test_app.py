@@ -51,7 +51,7 @@ class MyTestCase(unittest.TestCase):
              'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH', 'pg': '20', 'lt': '3',
              'blk': 'A', 'subid': 'UH', 's': '09'})
         self.assertEquals(ret, {'headers': {'Accept': 'application/json'},
-                                'url2': 'https://bcpao.us/api/v1/search?lot=3&blk=A&platbook=53&platpage=20&subname=%20WYNDHAM%20AT%20DURAN&activeonly=true&size=10&page=1'})
+                                'url2': 'https://www.bcpao.us/api/v1/search?lot=3&blk=A&platbook=53&platpage=20&subname=%20WYNDHAM%20AT%20DURAN&activeonly=true&size=10&page=1'})
 
     def test_bcpao_get_acct_by_legal2(self):
         ret = Bcpao().get_acct_by_legal_request({'legal_desc': 'NO LAND DESCRIBED'})
@@ -69,7 +69,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_get_parcel_data_by_acct2_request(self):
         ret = Bcpao().get_parcel_data_by_acct2_request('test_acct')
-        self.assertEqual(ret['url'], 'https://bcpao.us/api/v1/account/test_acct')
+        self.assertEqual(ret['url'], 'https://www.bcpao.us/api/v1/account/test_acct')
         self.assertEqual(ret['headers'], {'Accept': 'application/json'})
 
     def test_parse_bcpaco_item_response(self):
@@ -390,6 +390,24 @@ class MyTestCase(unittest.TestCase):
             '<br><br>could not get addresses for the following: <br>\n'
             'count_id: 2, 05-2008-CA-033772-XXXX-XX<br>\n'
             '"LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH"', ret)
+
+    def test_bcpao_get_bcpao_searches(self):
+        l = BclerkPublicRecords.get_legal_from_str(
+            'LT 11 BLK 3 PB 11 PG 39 WESTFIELD ESTATES SUB S 67 FT S 05 T 22 R 35 SUBID 04')
+        ret = Bcpao().get_bcpao_searches(l)
+        ret_urls = [x.request for x in ret]
+        self.assertEquals([{'headers': {'Accept': 'application/json'},
+                            'url2': 'https://www.bcpao.us/api/v1/search?lot=11&blk=3&platbook=11&platpage=39&subname=%20WESTFIELD%20ESTATES%20SUB%20S%2067%20FT&activeonly=true&size=10&page=1'}],
+                          ret_urls)
+
+    def test_bcpao_get_bcpao_searches_1(self):
+        l = BclerkPublicRecords.get_legal_from_str(
+            'LT 15 BLK 49 PB 3 PG 35 INDIALANTIC BY THE SEA S 36 T 27 R 37 SUBID EO')
+        ret = Bcpao().get_bcpao_searches(l)
+        ret_urls = [x.request for x in ret]
+        self.assertEquals([{'headers': {'Accept': 'application/json'},
+                            'url2': 'https://www.bcpao.us/api/v1/search?lot=15&blk=49&platbook=3&platpage=35&subname=%20INDIALANTIC%20BY%20THE%20SEA&activeonly=true&size=10&page=1'}],
+                          ret_urls)
 
 
 if __name__ == '__main__':
