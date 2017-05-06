@@ -1,5 +1,5 @@
 import unittest
-from datetime import date, datetime
+from datetime import date
 
 from xlwt import Formula
 
@@ -17,20 +17,18 @@ class MyTestCase(unittest.TestCase):
             rows = Foreclosures().get_rows_from_response(myfile.read())
             self.assertEqual(len(rows), 3)
             self.assertEqual(rows, [
-                {'foreclosure_sale_date': '05-10-2017', 'comment': '\xa0', 'case_title': 'BANK NEW YORK VS C DORCANT',
+                {'foreclosure_sale_date': date(2017, 5, 10), 'comment': '\xa0',
+                 'case_title': 'BANK NEW YORK VS C DORCANT',
                  'count': 1, 'case_number': '05-2008-CA-022131-XXXX-XX'},
-                {'foreclosure_sale_date': '05-10-2017', 'comment': '\xa0', 'case_number': '05-2010-CA-047105-XXXX-XX',
+                {'foreclosure_sale_date': date(2017, 5, 10), 'comment': '\xa0',
+                 'case_number': '05-2010-CA-047105-XXXX-XX',
                  'count': 2, 'case_title': 'HSBC MORTGAGE VS ALBERT FLOWER'},
-                {'foreclosure_sale_date': '05-10-2017', 'count': 3, 'comment': '\xa0',
+                {'foreclosure_sale_date': date(2017, 5, 10), 'count': 3, 'comment': '\xa0',
                  'case_number': '05-2011-CA-052383-XXXX-XX', 'case_title': 'OCWEN LOAN SVC VS JAMES H WOOD'}])
 
     def test_dates_1(self):
         ret = MyDate().get_next_dates(date(2017, 4, 23))
         self.assertEqual(ret, [date(2017, 4, 26), date(2017, 5, 3)])
-
-    def test_get_date_strings_to_add(self):
-        self.assertEqual(Jac().get_date_strings_to_add([date(2017, 4, 26), date(2017, 5, 3)]),
-                         ['04-26-2017', '05-03-2017'])
 
     def test_get_short_date_strings_to_add(self):
         self.assertEqual(Jac().get_short_date_strings_to_add([date(2017, 4, 26), date(2017, 5, 3)]),
@@ -298,8 +296,6 @@ class MyTestCase(unittest.TestCase):
 
             def write(self, col, label, style=None):
                 if isinstance(label, Formula):
-                    # print('t: '+label.text())
-                    # print('r: '+str(label.rpn()))
                     self.data[col] = str(label.text())
                 else:
                     self.data[col] = str(label)
@@ -381,9 +377,14 @@ class MyTestCase(unittest.TestCase):
         self.assertEquals(['papua', 'new'], ret)
 
     def test_jac_get_dates_count_map(self):
-        ret = Jac().get_dates_count_map([{'foreclosure_sale_date': "5-5-2017"}, {'foreclosure_sale_date': "5-6-2017"},
-                                         {'foreclosure_sale_date': "5-6-2017"}])
-        self.assertEquals({datetime(2017, 5, 6, 0, 0): 2, datetime(2017, 5, 5, 0, 0): 1}, ret)
+        ret = Jac().get_dates_count_map([{'foreclosure_sale_date': date(2017, 4, 26), 'val': 2},
+                                         {'foreclosure_sale_date': date(2017, 5, 3), 'val': 4}])
+        self.assertEquals({date(2017, 4, 26): 1, date(2017, 5, 3): 1}, ret)
+
+    def test_jac_get_non_cancelled_nums(self):
+        ret = Jac().get_non_cancelled_nums(None, [{'comment': '', 'foreclosure_sale_date': date(2017, 4, 26)},
+                                                  {'comment': 'CANCELLED', 'foreclosure_sale_date': date(2017, 4, 27)}])
+        self.assertEquals('{datetime.date(2017/4/26: 1}', ret)
 
 
 if __name__ == '__main__':

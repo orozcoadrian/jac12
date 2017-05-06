@@ -831,7 +831,7 @@ class Foreclosures(object):
             current_row['case_number'] = tds[0].string
             current_row['case_title'] = tds[1].string
             current_row['comment'] = tds[2].string
-            current_row['foreclosure_sale_date'] = tds[3].string
+            current_row['foreclosure_sale_date'] = datetime.strptime(tds[3].string, "%m-%d-%Y").date()
             current_row['count'] = len(rows) + 1
             rows.append(current_row)
         return rows
@@ -862,14 +862,14 @@ class Jac(object):
         logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
 
-    def get_mainsheet_dataset(self, mrs, out_dir, date_string_to_add):
-        logging.info('**get_mainsheet_dataset: ' + date_string_to_add)
+    def get_mainsheet_dataset(self, mrs, out_dir, date_to_add):
+        logging.info('**get_mainsheet_dataset: ' + str(date_to_add))
 
         filter_by_dates = FilterByDates()
-        filter_by_dates.set_dates([date_string_to_add])
+        filter_by_dates.set_dates([date_to_add])
         mrs = filter_by_dates.apply(mrs)
 
-        sheet_name = date_string_to_add[5:]
+        sheet_name = date_to_add.strftime("%m-%d")
         out_dir_htm = out_dir + '/' + sheet_name + '/html_files'
         os.makedirs(out_dir_htm, exist_ok=True)
 
@@ -929,7 +929,7 @@ class Jac(object):
     def get_dates_count_map(items):
         ret = {}
         for i in items:
-            parsed_date = datetime.strptime(i['foreclosure_sale_date'], "%m-%d-%Y")
+            parsed_date = i['foreclosure_sale_date']
             if parsed_date not in ret:
                 ret[parsed_date] = 1
             else:
@@ -944,10 +944,6 @@ class Jac(object):
         username = 'orozcoadrian'
         self.email_infra.send_mail(username, password, fromaddr, toaddr, message_subject, message_text, file_paths,
                                    'smtp.gmail.com:587')
-
-    @staticmethod
-    def get_date_strings_to_add(dates):
-        return [x.strftime("%m-%d-%Y") for x in dates]
 
     @staticmethod
     def get_short_date_strings_to_add(dates):
@@ -975,7 +971,7 @@ class Jac(object):
         dates = MyDate().get_next_dates(date.today())
         logging.info(dates)
         dates_to_add = dates  # [0:2]
-        date_strings_to_add = self.get_date_strings_to_add(dates_to_add)
+        date_strings_to_add = dates_to_add
         # date_strings_to_add = [date_strings_to_add[0]]  # temp hack
         short_date_strings_to_add = self.get_short_date_strings_to_add(dates_to_add)
         logging.info('short_date_strings_to_add: ' + str(short_date_strings_to_add))
@@ -996,7 +992,7 @@ class Jac(object):
         logging.info('date_strings_to_add: ' + str(date_strings_to_add))
         logging.info('abc: ' + abc)
         # mrs = [mrs[1]]  # temp hack
-        # mrs = mrs[:3]  # temp hack
+        mrs = mrs[:3]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in date_strings_to_add])
 
         for dataset in datasets:
