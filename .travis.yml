@@ -4,6 +4,7 @@ python:
 before_install:
     - pip install pytest pytest-cov
     - pip install coveralls #https://ilovesymposia.com/2014/10/15/continuous-integration-in-python-5-report-test-coverage-using-coveralls/
+    - pip install codecov
 install:
   - pip install requests
   - pip install beautifulsoup4
@@ -13,3 +14,4 @@ script:
     - pytest --cov app --verbose
 after_success:
     - coveralls
+    - codecov
