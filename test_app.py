@@ -254,9 +254,6 @@ class MyTestCase(unittest.TestCase):
             def __init__(self):
                 self.data = {}
 
-            def write(self, i, o):
-                self.data[i] = o
-
             def write(self, col, label, style=None):
                 if isinstance(label, Formula):
                     self.data[col] = str(label.text())
