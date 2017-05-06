@@ -1,3 +1,4 @@
+import pprint
 import unittest
 from collections import OrderedDict
 from datetime import date
@@ -390,30 +391,61 @@ class MyTestCase(unittest.TestCase):
             '"LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH"', ret)
 
     def test_bcpao_get_bcpao_searches(self):
+        # account: 2202306
+        # address: 360 S Christmas Hill Rd Titusville FL 32796
+        # parcel id: 22-35-05-04-3-11
+        # land description: Westfield Estates Sub S 67 Ft Of Lot 11, N 23 Ft Of Lot 15 & N 23 Ft Of E 45.67 Ft Of Lot 14 Blk 3
+        # https://www.bcpao.us/api/v1/search?parcel=20G-35-04-ABC-123-5.6&activeonly=true&sortColumn=siteAddress&sortOrder=asc&size=10&page=1
         l = BclerkPublicRecords.get_legal_from_str(
             'LT 11 BLK 3 PB 12 PG 39 WESTFIELD ESTATES SUB S 67 FT S 05 T 22 R 35 SUBID 04')
         ret = Bcpao().get_bcpao_searches(l)
         ret_reqs = [x.request for x in ret]
-        self.assertEquals([{'params': OrderedDict([('lot', '11'), ('blk', '3'), ('platbook', '12'), ('platpage', '39'),
+        pprint.pprint(ret_reqs)
+        self.assertEquals([{'endpoint': 'https://www.bcpao.us/api/v1/search?',
+                            'headers': {'Accept': 'application/json'},
+                            'params': OrderedDict([('lot', '11'),
+                                                   ('blk', '3'),
+                                                   ('platbook', '12'),
+                                                   ('platpage', '39'),
                                                    ('subname', b' WESTFIELD ESTATES SUB S 67 FT'),
-                                                   ('activeonly', 'true'), ('size', '10'), ('page', '1')]),
-                            'endpoint': 'https://www.bcpao.us/api/v1/search?',
-                            'url2': 'https://www.bcpao.us/api/v1/search?lot=11&blk=3&platbook=12&platpage=39&subname=+WESTFIELD+ESTATES+SUB+S+67+FT&activeonly=true&size=10&page=1',
-                            'headers': {'Accept': 'application/json'}}],
+                                                   ('activeonly', 'true'),
+                                                   ('size', '10'),
+                                                   ('page', '1')]),
+                            'url2': 'https://www.bcpao.us/api/v1/search?lot=11&blk=3&platbook=12&platpage=39&subname=+WESTFIELD+ESTATES+SUB+S+67+FT&activeonly=true&size=10&page=1'},
+                           {'endpoint': 'https://www.bcpao.us/api/v1/search?',
+                            'headers': {'Accept': 'application/json'},
+                            'params': OrderedDict([('parcel',
+                                                    '22-35-05-04-3-11'),
+                                                   ('activeonly', 'true'),
+                                                   ('size', '10'),
+                                                   ('page', '1')]),
+                            'url2': 'https://www.bcpao.us/api/v1/search?parcel=22-35-05-04-3-11&activeonly=true&size=10&page=1'}],
                           ret_reqs)
 
     def test_bcpao_get_bcpao_searches_1(self):
         l = BclerkPublicRecords.get_legal_from_str(
             'LT 15 BLK 49 PB 3 PG 35 INDIALANTIC BY THE SEA S 36 T 27 R 37 SUBID EO')
         ret = Bcpao().get_bcpao_searches(l)
-        ret_urls = [x.request for x in ret]
-        self.assertEquals([{'params': OrderedDict([('lot', '15'), ('blk', '49'), ('platbook', '3'), ('platpage', '35'),
-                                                   ('subname', b' INDIALANTIC BY THE SEA'), ('activeonly', 'true'),
-                                                   ('size', '10'), ('page', '1')]),
-                            'url2': 'https://www.bcpao.us/api/v1/search?lot=15&blk=49&platbook=3&platpage=35&subname=+INDIALANTIC+BY+THE+SEA&activeonly=true&size=10&page=1',
-                            'endpoint': 'https://www.bcpao.us/api/v1/search?',
-                            'headers': {'Accept': 'application/json'}}],
-                          ret_urls)
+        ret_reqs = [x.request for x in ret]
+        self.assertEquals([{'endpoint': 'https://www.bcpao.us/api/v1/search?',
+                            'headers': {'Accept': 'application/json'},
+                            'params': OrderedDict([('lot', '15'),
+                                                   ('blk', '49'),
+                                                   ('platbook', '3'),
+                                                   ('platpage', '35'),
+                                                   ('subname', b' INDIALANTIC BY THE SEA'),
+                                                   ('activeonly', 'true'),
+                                                   ('size', '10'),
+                                                   ('page', '1')]),
+                            'url2': 'https://www.bcpao.us/api/v1/search?lot=15&blk=49&platbook=3&platpage=35&subname=+INDIALANTIC+BY+THE+SEA&activeonly=true&size=10&page=1'},
+                           {'endpoint': 'https://www.bcpao.us/api/v1/search?',
+                            'headers': {'Accept': 'application/json'},
+                            'params': OrderedDict([('parcel', '27-37-36-EO-49-15'),
+                                                   ('activeonly', 'true'),
+                                                   ('size', '10'),
+                                                   ('page', '1')]),
+                            'url2': 'https://www.bcpao.us/api/v1/search?parcel=27-37-36-EO-49-15&activeonly=true&size=10&page=1'}],
+                          ret_reqs)
 
 
 if __name__ == '__main__':

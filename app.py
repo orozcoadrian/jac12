@@ -444,6 +444,38 @@ class BcpaoBySubOrT(object):
                 return loaded_json[0]['account']
 
 
+class BcpaoByParcelId(object):
+    def __init__(self, legal_arg):
+        self.request = self.get_acct_by_legal_request(legal_arg)
+
+    @staticmethod
+    def get_acct_by_legal_request(legal_arg):
+        arry_pid_parts = [legal_arg['t'], legal_arg['r'], legal_arg['s'], legal_arg['subid'], legal_arg['blk']]
+        if 'lt' in legal_arg:
+            arry_pid_parts.append(legal_arg['lt'])
+
+        arry_pid_parts_str = '-'.join(arry_pid_parts)
+
+        bcpao_search_endpoint = 'https://www.bcpao.us/api/v1/search?'
+        params = OrderedDict()
+        params['parcel'] = arry_pid_parts_str
+        params['activeonly'] = 'true'
+        params['size'] = '10'
+        params['page'] = '1'
+
+        url2 = bcpao_search_endpoint + urllib.parse.urlencode(params)
+        ret = {'url2': url2, 'headers': {'Accept': 'application/json'}, 'endpoint': bcpao_search_endpoint,
+               'params': params}
+        return ret
+
+    @staticmethod
+    def parse_acct_by_legal_response(resp):
+        if resp.status_code == 200 and len(resp.text) > 0:
+            loaded_json = json.loads(resp.text)  # use req.json() instead?
+            if loaded_json and len(loaded_json) == 1:
+                return loaded_json[0]['account']
+
+
 class Bcpao(object):
     def __init__(self, bcpao_infra=None):
         self.bcpao_infra = bcpao_infra
@@ -550,7 +582,7 @@ class Bcpao(object):
 
     @staticmethod
     def get_bcpao_searches(legal_arg):
-        bcpao_objs = [BcpaoBySubOrT(legal_arg)]
+        bcpao_objs = [BcpaoBySubOrT(legal_arg), BcpaoByParcelId(legal_arg)]
         return bcpao_objs
 
     @staticmethod
