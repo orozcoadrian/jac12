@@ -16,21 +16,13 @@ class MyTestCase(unittest.TestCase):
         with open('test_resources/foreclosures_resp.html', 'rb') as myfile:
             rows = Foreclosures().get_rows_from_response(myfile.read())
             self.assertEqual(len(rows), 3)
-            self.assertEqual(rows, [{'case_number': '05-2008-CA-006267-XXXX-XX',
-                                     'case_title': 'WACHOVIA VS FIRST BREVARD CORP',
-                                     'comment': '\xa0',
-                                     'count': 1,
-                                     'foreclosure_sale_date': '2017-04-26'},
-                                    {'case_number': '05-2008-CA-033772-XXXX-XX',
-                                     'case_title': 'BANK NEW YORK VS W COOK',
-                                     'comment': '\xa0',
-                                     'count': 2,
-                                     'foreclosure_sale_date': '2017-04-26'},
-                                    {'case_number': '05-2010-CA-012039-XXXX-XX',
-                                     'case_title': 'NATIONSTAR VS FRANCIS METCALF',
-                                     'comment': 'CANCELLED',
-                                     'count': 3,
-                                     'foreclosure_sale_date': '2017-04-26'}])
+            self.assertEqual(rows, [
+                {'foreclosure_sale_date': '05-10-2017', 'comment': '\xa0', 'case_title': 'BANK NEW YORK VS C DORCANT',
+                 'count': 1, 'case_number': '05-2008-CA-022131-XXXX-XX'},
+                {'foreclosure_sale_date': '05-10-2017', 'comment': '\xa0', 'case_number': '05-2010-CA-047105-XXXX-XX',
+                 'count': 2, 'case_title': 'HSBC MORTGAGE VS ALBERT FLOWER'},
+                {'foreclosure_sale_date': '05-10-2017', 'count': 3, 'comment': '\xa0',
+                 'case_number': '05-2011-CA-052383-XXXX-XX', 'case_title': 'OCWEN LOAN SVC VS JAMES H WOOD'}])
 
     def test_dates_1(self):
         ret = MyDate().get_next_dates(date(2017, 4, 23))
@@ -38,7 +30,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_get_date_strings_to_add(self):
         self.assertEqual(Jac().get_date_strings_to_add([date(2017, 4, 26), date(2017, 5, 3)]),
-                         ['2017-04-26', '2017-05-03'])
+                         ['04-26-2017', '05-03-2017'])
 
     def test_get_short_date_strings_to_add(self):
         self.assertEqual(Jac().get_short_date_strings_to_add([date(2017, 4, 26), date(2017, 5, 3)]),
@@ -389,8 +381,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEquals(['papua', 'new'], ret)
 
     def test_jac_get_dates_count_map(self):
-        ret = Jac().get_dates_count_map([{'foreclosure_sale_date': "2017-5-5"}, {'foreclosure_sale_date': "2017-5-6"},
-                                         {'foreclosure_sale_date': "2017-5-6"}])
+        ret = Jac().get_dates_count_map([{'foreclosure_sale_date': "5-5-2017"}, {'foreclosure_sale_date': "5-6-2017"},
+                                         {'foreclosure_sale_date': "5-6-2017"}])
         self.assertEquals({datetime(2017, 5, 6, 0, 0): 2, datetime(2017, 5, 5, 0, 0): 1}, ret)
 
 

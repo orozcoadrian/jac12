@@ -929,7 +929,7 @@ class Jac(object):
     def get_dates_count_map(items):
         ret = {}
         for i in items:
-            parsed_date = datetime.strptime(i['foreclosure_sale_date'], "%Y-%m-%d")
+            parsed_date = datetime.strptime(i['foreclosure_sale_date'], "%m-%d-%Y")
             if parsed_date not in ret:
                 ret[parsed_date] = 1
             else:
@@ -947,7 +947,7 @@ class Jac(object):
 
     @staticmethod
     def get_date_strings_to_add(dates):
-        return [x.strftime("%Y-%m-%d") for x in dates]
+        return [x.strftime("%m-%d-%Y") for x in dates]
 
     @staticmethod
     def get_short_date_strings_to_add(dates):
@@ -996,7 +996,7 @@ class Jac(object):
         logging.info('date_strings_to_add: ' + str(date_strings_to_add))
         logging.info('abc: ' + abc)
         # mrs = [mrs[1]]  # temp hack
-        mrs = mrs[:3]  # temp hack
+        # mrs = mrs[:3]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in date_strings_to_add])
 
         for dataset in datasets:
