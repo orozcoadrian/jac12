@@ -404,7 +404,7 @@ class Bcpao(object):
 
     @staticmethod
     def get_parcel_data_by_acct2_request(acct):
-        ret = {'url': 'https://bcpao.us/api/v1/account/' + str(acct),
+        ret = {'url': 'https://www.bcpao.us/api/v1/account/' + str(acct),
                'headers': {'Accept': 'application/json'}}
         return ret
 
@@ -477,7 +477,7 @@ class Bcpao(object):
                 logger.info('START')
             sub, lot, block, pb, pg, s, t, r, subid = legal
             sub = sub.replace(u'\xc2', u'').encode('utf-8')
-            url2 = 'https://bcpao.us/api/v1/search?'
+            url2 = 'https://www.bcpao.us/api/v1/search?'
             if lot is not None:
                 url2 += 'lot=' + str(lot)
             if block is not None:
@@ -876,7 +876,7 @@ class Jac(object):
         for i, r in enumerate(mrs):
             logging.info('count_id: ' + str(r['count']))
 
-            # if r['count'] < 60:  # temp hack
+            # if r['count'] != 9:  # temp hack
             #     continue
 
             self.fill_by_case_number(out_dir_htm, r)
@@ -989,7 +989,7 @@ class Jac(object):
         logging.info('date_strings_to_add: ' + str(dates))
         logging.info('abc: ' + abc)
         # mrs = [mrs[0]]  # temp hack
-        # mrs = mrs[:0]  # temp hack
+        # mrs = mrs[:10]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in dates])
 
         for dataset in datasets:
