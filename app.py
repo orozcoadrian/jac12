@@ -11,6 +11,7 @@ import sys
 import time
 import urllib.parse
 import zipfile
+from collections import OrderedDict
 from datetime import datetime, date, timedelta
 
 from bs4 import BeautifulSoup
@@ -415,18 +416,24 @@ class BcpaoBySubOrT(object):
                 logger.info('START')
             sub, lot, block, pb, pg, s, t, r, subid = legal
             sub = sub.replace(u'\xc2', u'').encode('utf-8')
-            url2 = 'https://www.bcpao.us/api/v1/search?'
+            bcpao_search_endpoint = 'https://www.bcpao.us/api/v1/search?'
+            params = OrderedDict()
             if lot is not None:
-                url2 += 'lot=' + str(lot)
+                params['lot'] = str(lot)
             if block is not None:
-                url2 += '&blk=' + str(block)
+                params['blk'] = str(block)
             if pb is not None:
-                url2 += '&platbook=' + str(pb)
+                params['platbook'] = str(pb)
             if pg is not None:
-                url2 += '&platpage=' + str(pg)
-            url2 += '&subname=' + urllib.parse.quote(sub)
-            url2 += '&activeonly=true&size=10&page=1'
-            ret = {'url2': url2, 'headers': {'Accept': 'application/json'}}
+                params['platpage'] = str(pg)
+            params['subname'] = sub
+            params['activeonly'] = 'true'
+            params['size'] = '10'
+            params['page'] = '1'
+
+            url2 = bcpao_search_endpoint + urllib.parse.urlencode(params)
+            ret = {'url2': url2, 'headers': {'Accept': 'application/json'}, 'endpoint': bcpao_search_endpoint,
+                   'params': params}
         return ret
 
     @staticmethod
