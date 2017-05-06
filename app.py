@@ -926,16 +926,15 @@ class Jac(object):
         return date_counts
 
     @staticmethod
-    def get_dates_count_map(items2):
-        dates_count_map = {}
-        for i in items2:
-            item = i
-            date2 = datetime.strptime(item['foreclosure_sale_date'], "%Y-%m-%d")
-            if date2 not in dates_count_map:
-                dates_count_map[date2] = 1
+    def get_dates_count_map(items):
+        ret = {}
+        for i in items:
+            parsed_date = datetime.strptime(i['foreclosure_sale_date'], "%Y-%m-%d")
+            if parsed_date not in ret:
+                ret[parsed_date] = 1
             else:
-                dates_count_map[date2] += 1
-        return dates_count_map
+                ret[parsed_date] += 1
+        return ret
 
     def my_send_mail(self, file_paths, password, subject, body):
         fromaddr = 'orozcoadrian@gmail.com'
