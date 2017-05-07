@@ -450,11 +450,30 @@ class BcpaoByParcelId(object):
 
     @staticmethod
     def get_acct_by_legal_request(legal_arg):
-        arry_pid_parts = [legal_arg['t'], legal_arg['r'], legal_arg['s'], legal_arg['subid'], legal_arg['blk']]
-        if 'lt' in legal_arg:
-            arry_pid_parts.append(legal_arg['lt'])
+        arry_pid_parts = [legal_arg['t'], legal_arg['r'], legal_arg['s'], legal_arg['subid'], legal_arg['blk'],
+                          legal_arg['lt']]
 
-        arry_pid_parts_str = '-'.join(arry_pid_parts)
+        # REPLACE BLANK PID PARTS WITH ASTERISK
+        str_pid = ''
+        pid_parts_count = 0
+        for i in range(len(arry_pid_parts)):
+            if arry_pid_parts[i] is None or arry_pid_parts[i] == '--':
+                str_part = '*'
+            else:
+                str_part = arry_pid_parts[i]
+                pid_parts_count += 1
+            # Build PID string
+            str_pid += str_part + '-'
+
+        # IF LAST CHARACTER IN PID STRING IS -, REMOVE IT
+        if str_pid.endswith('-'):
+            str_pid = str_pid[:-1]
+
+        # IF LAST CHARACTER IN PID STRING IS -* or *-, REMOVE IT
+        if str_pid.endswith('-*') or str_pid.endswith('*-'):
+            str_pid = str_pid[:-2]
+
+        arry_pid_parts_str = str_pid
 
         bcpao_search_endpoint = 'https://www.bcpao.us/api/v1/search?'
         params = OrderedDict()
@@ -882,7 +901,7 @@ class MyDate(object):
 
     def get_next_dates(self, from_date):
         ret = []
-        weeks_num = 2  # 6
+        weeks_num = 2  # 6 # hack
         wednesdays = []
         for x in range(0, weeks_num):
             wednesdays.append(from_date + timedelta(weeks=x))  # was getting a warning when this was a list-compr
@@ -961,12 +980,19 @@ class Jac(object):
         os.makedirs(out_dir_htm, exist_ok=True)
 
         for i, r in enumerate(mrs):
-            logging.info('count_id: ' + str(r['count']))
 
-            # if r['count'] != 9:  # temp hack
+            # if r['count'] not in [7,15,16]:  # temp hack
             #     continue
 
-            self.fill_by_case_number(out_dir_htm, r)
+            retries = 3
+            for attempt in range(retries):
+                try:
+                    attempt_str = '' if attempt == 0 else " (attempt #" + str(attempt) + "/" + str(attempt) + ")"
+                    logging.info('count_id: ' + str(r['count']) + attempt_str)
+                    self.fill_by_case_number(out_dir_htm, r)
+                    break
+                except Exception as e:
+                    logging.error("exception: " + str(e))
 
         logging.info('sheet fetch complete')
         logging.info('sheet num records: ' + str(len(mrs)))
@@ -1127,18 +1153,20 @@ class Jac(object):
 
     @staticmethod
     def get_no_addr_str(mrs):
-        no_addr = [x for x in mrs if
-                   'bcpao_item' in x and ('address' not in x['bcpao_item'] or len(x['bcpao_item']['address']) == 0)]
+        no_addr = [x for x in mrs if 'bcpao_item' not in x or
+                   ('bcpao_item' in x and ('address' not in x['bcpao_item'] or len(x['bcpao_item']['address']) == 0))]
         ids = []
         for x in no_addr:
             id_to_show = 'count_id: ' + str(x['count']) + ', ' + x['case_number'] + '<br>\n'
+            legal_str = None
             if x is not None and 'legal' in x and x['legal'] is not None and 'legal_desc' in x['legal']:
-                id_to_show += '"' + x['legal']['legal_desc'] + '"'
+                legal_str = '  "' + x['legal']['legal_desc'] + '"'
             if 'legals' in x:
                 for l in x['legals']:
                     if 'legal_desc' in l:
-                        id_to_show += '<br>\n"' + l['legal_desc'] + '"'
-            ids.append(id_to_show)
+                        legal_str = '<br>\n  "' + l['legal_desc'] + '"'
+            if legal_str is not None:
+                ids.append(id_to_show + legal_str)
         no_addr_str = ''
         if len(ids) > 0:
             no_addr_str = "\n\n<br><br>could not get addresses for the following: <br>\n" + '<br>\n'.join(ids)

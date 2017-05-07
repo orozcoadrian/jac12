@@ -349,46 +349,61 @@ class MyTestCase(unittest.TestCase):
         self.assertEquals('{datetime.date(2017/4/26: 1}', ret)
 
     def test_jac_get_email_body(self):
-        mrs = [{'case_number': '05-2008-CA-033772-XXXX-XX',
-                'taxes_url': 'https://brevard.county-taxes.com/pubte/parcels/2627712',
+        self.maxDiff = None
+        mrs = [{'case_number': '05-2008-CA-033111-XXXX-XX',
+                'taxes_url': 'https://brevard.county-taxes.com/public/real_estate/parcels/2627712',
                 'comment': '\xa0', 'taxes_value': '0', 'legals': [],
                 'bcpao_item': {'frame code': 'MASNRYCONC, WOOD FRAME', 'zip_code': '32940',
                                'year built': '2007', 'latest market value total': '$943,700.00',
                                'address': '2778 WYNDHAM WAY MELBOURNE FL 32940',
                                'total base area': '4441'},
                 'foreclosure_sale_date': '2017-04-26',
-                'orig_mtg_link': 'http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997',
+                'orig_mtg_link': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7Ba4EeWT71ewgv3amjxLBw==&theKey=TIbbOCD+TFEA1or3NprKhA==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
                 'bcpao_acc': '2627712', 'orig_mtg_tag': 'OR MTG',
-                'latest_amount_due': 'http://199.241.8.22xqhnLZXlXUw==&uid=999999997',
-                'count': 2,
+                'latest_amount_due': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=kXZYtPY5nJxqhnchAd/gow==&theKey=NN73L3AVCXFc+xj6fiV/lg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
+                'count': 1,
                 'legal': {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
                           'r': '36', 'subd': ' WYNDHAM AT DURAN',
-                          'legal_desc': 'LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH',
+                          'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH',
                           't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'},
-               {'case_number': '05-2008-CA-033772-XXXX-XX',
-                'taxes_url': 'https://brevard.county-taxes.com/pubte/parcels/2627712',
+               {'case_number': '05-2008-CA-033222-XXXX-XX',
+                'taxes_url': 'https://brevard.county-taxes.com/public/real_estate/parcels/2627712',
                 'comment': '\xa0', 'taxes_value': '0', 'legals': [],
                 'bcpao_item': {'frame code': 'MASNRYCONC, WOOD FRAME', 'zip_code': '32940',
                                'year built': '2007', 'latest market value total': '$943,700.00',
                                'address': '',
                                'total base area': '4441'},
                 'foreclosure_sale_date': '2017-04-26',
-                'orig_mtg_link': 'http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997',
+                'orig_mtg_link': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7Ba4EeWT71ewgv3amjxLBw==&theKey=TIbbOCD+TFEA1or3NprKhA==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
                 'bcpao_acc': '2627712', 'orig_mtg_tag': 'OR MTG',
-                'latest_amount_due': 'http://199.241.8.22xqhnLZXlXUw==&uid=999999997',
+                'latest_amount_due': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=kXZYtPY5nJxqhnchAd/gow==&theKey=NN73L3AVCXFc+xj6fiV/lg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
                 'count': 2,
                 'legal': {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
                           'r': '36', 'subd': ' WYNDHAM AT DURAN',
-                          'legal_desc': 'LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH',
+                          'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH',
+                          't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'},
+               {'case_number': '05-2008-CA-033333-XXXX-XX',
+                'taxes_url': 'https://brevard.county-taxes.com/public/real_estate/parcels/2627712',
+                'comment': '\xa0', 'taxes_value': '0', 'legals': [],
+                'foreclosure_sale_date': '2017-04-26',
+                'orig_mtg_link': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7Ba4EeWT71ewgv3amjxLBw==&theKey=TIbbOCD+TFEA1or3NprKhA==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
+                'orig_mtg_tag': 'OR MTG',
+                'latest_amount_due': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=kXZYtPY5nJxqhnchAd/gow==&theKey=NN73L3AVCXFc+xj6fiV/lg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
+                'count': 3,
+                'legal': {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
+                          'r': '36', 'subd': ' WYNDHAM AT DURAN',
+                          'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH',
                           't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'}
                ]
         ret = Jac().get_email_body('test_abc', 'test_date_counts', 'test_filename', mrs)
+        print(ret)
         self.assertEquals(
-            'this result is for: test_abc<br>total records: 2<br><br>the following summarizes how many not-cancelled items there are per month in the <a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> as of now: <br>test_date_counts<br><br>test_filename\n'
-            '\n'
-            '<br><br>could not get addresses for the following: <br>\n'
-            'count_id: 2, 05-2008-CA-033772-XXXX-XX<br>\n'
-            '"LT 3 BLK A PB 53 PG 20DURAN S 09 T 26 R 36 SUBID UH"', ret)
+            'this result is for: test_abc<br>total records: 3<br><br>the following summarizes how many not-cancelled items there are per month in the <a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> as of now: <br>test_date_counts<br><br>test_filename\n\n<br><br>could not get addresses for the following: <br>\n'
+            'count_id: 2, 05-2008-CA-033222-XXXX-XX<br>\n'
+            '  "LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH"<br>\n'
+            'count_id: 3, 05-2008-CA-033333-XXXX-XX<br>\n'
+            '  "LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH"'
+            , ret)
 
     def test_bcpao_get_bcpao_searches(self):
         # account: 2202306
@@ -445,6 +460,31 @@ class MyTestCase(unittest.TestCase):
                                                    ('size', '10'),
                                                    ('page', '1')]),
                             'url2': 'https://www.bcpao.us/api/v1/search?parcel=27-37-36-EO-49-15&activeonly=true&size=10&page=1'}],
+                          ret_reqs)
+
+    def test_bcpao_get_bcpao_searches_2(self):
+        l = BclerkPublicRecords.get_legal_from_str(
+            'LT 2 PB 54 PG 57 PARKSIDE WEST P.U.D. S 33 T 28 R 36 SUBID 50')
+        ret = Bcpao().get_bcpao_searches(l)
+        ret_reqs = [x.request for x in ret]
+        pprint.pprint(ret_reqs)
+        self.assertEquals([{'endpoint': 'https://www.bcpao.us/api/v1/search?',
+                            'headers': {'Accept': 'application/json'},
+                            'params': OrderedDict([('lot', '2'),
+                                                   ('platbook', '54'),
+                                                   ('platpage', '57'),
+                                                   ('subname', b' PARKSIDE WEST P.U.D.'),
+                                                   ('activeonly', 'true'),
+                                                   ('size', '10'),
+                                                   ('page', '1')]),
+                            'url2': 'https://www.bcpao.us/api/v1/search?lot=2&platbook=54&platpage=57&subname=+PARKSIDE+WEST+P.U.D.&activeonly=true&size=10&page=1'},
+                           {'endpoint': 'https://www.bcpao.us/api/v1/search?',
+                            'headers': {'Accept': 'application/json'},
+                            'params': OrderedDict([('parcel', '28-36-33-50-*-2'),
+                                                   ('activeonly', 'true'),
+                                                   ('size', '10'),
+                                                   ('page', '1')]),
+                            'url2': 'https://www.bcpao.us/api/v1/search?parcel=28-36-33-50-%2A-2&activeonly=true&size=10&page=1'}],
                           ret_reqs)
 
 

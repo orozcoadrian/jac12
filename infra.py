@@ -1,4 +1,5 @@
 import email
+import logging
 import os
 import smtplib
 from email.mime.base import MIMEBase
@@ -44,7 +45,6 @@ class BclerkPublicRecordsInfrastructure(object):
         resp = browser.response
 
         resp_text = resp.text
-        # return self.parse_response(resp_text)
         return resp_text
 
 
@@ -66,17 +66,23 @@ class BclerkEfactsInfrastructure(object):
 class BcpaoInfrastructure(object):
     @staticmethod
     def get_res_from_req(req):
-        return requests.get(req['url'], headers=req['headers'])
+        logging.debug('***** before requests.get 1')
+        ret = requests.get(req['url'], headers=req['headers'], timeout=10)
+        logging.debug('*** after')
+        return ret
 
     @staticmethod
     def get_acct_by_legal_resp_from_req(url2, headers):
-        return requests.get(url2, headers=headers, verify=False, timeout=10)  # timeout in seconds
+        logging.debug('***** before requests.get 2')
+        ret = requests.get(url2, headers=headers, timeout=10)  # timeout in seconds
+        logging.debug('*** after')
+        return ret
 
 
 class TaxesInfrastructure(object):
     @staticmethod
     def get_resp_from_req(url):
-        r = requests.post(url, data='', headers='', stream=True)
+        r = requests.post(url, data='', headers='', stream=True, timeout=10)
         return r.content
 
 
