@@ -14,6 +14,7 @@ import zipfile
 from collections import OrderedDict
 from datetime import datetime, date, timedelta
 
+import requests
 from bs4 import BeautifulSoup
 from xlwt import Workbook, easyxf, Formula
 
@@ -722,9 +723,16 @@ class BclerkPublicRecords(object):
             return i['name_combos']
 
 
+class ContentHolder(object):
+    def __init__(self, content):
+        self.content = content
+
+    def __iter__(self):  # http://stackoverflow.com/a/9573612
+        return iter(self.content)
+
+
 class BclerkEfacts(object):
-    def __init__(self, file_system_infra=None, bclerk_efacts_infra=None):
-        self.file_system_infra = file_system_infra
+    def __init__(self, bclerk_efacts_infra=None):
         self.bclerk_efacts_infra = bclerk_efacts_infra
 
     @staticmethod
@@ -824,10 +832,9 @@ class BclerkEfacts(object):
         return ret
 
     @staticmethod
-    def pre_cache(case, out_dir):
+    def pre_cache(case):
         r = Item.pre_cache2(case)
-        ret = dict(court_type=r['court_type'], id2=r['id2'], out_dir=out_dir, seq_number=r['seq_number'],
-                   year=r['year'])
+        ret = dict(court_type=r['court_type'], id2=r['id2'], seq_number=r['seq_number'], year=r['year'])
         return ret
 
     def fetch_case_info(self, court_type, id2, out_dir, seq_number, year):
@@ -842,7 +849,8 @@ class BclerkEfacts(object):
             r = self.bclerk_efacts_infra.get_case_info_resp_from_req(data_, headers_, stream_, timeout_, url_)
             resp = self.parse_resp2(r)
             if out_dir:
-                self.file_system_infra.save_lines_to_file(out_dir + '/' + id2 + '_case_info.htm', 'wb', resp['content'])
+                resp['case_info_html_filepath'] = out_dir + '/' + id2 + '_case_info.htm'
+                resp['case_info_html_content'] = ContentHolder(resp['content'])
         return resp
 
     def fetch_reg_actions(self, court_type, jsessionid, seq_number, year, out_dir, id2):
@@ -852,9 +860,11 @@ class BclerkEfacts(object):
         headers_ = reg_actions_req_info['headers']
         r_text = self.bclerk_efacts_infra.get_reg_actions_resp_from_req(data_, headers_, url_)
 
+        resp = self.parse_reg_actions_response(r_text)
         if out_dir:
-            self.file_system_infra.save_content_to_file(out_dir + '/' + id2 + '_reg_actions.htm', 'w', r_text)
-        return self.parse_reg_actions_response(r_text)
+            resp['reg_actions_html_filepath'] = out_dir + '/' + id2 + '_reg_actions.htm'
+            resp['reg_actions_html_content'] = ContentHolder(r_text)
+        return resp
 
     def parse_reg_actions_response(self, r_text):
         grid, lad = self.get_lad_url_from_rtext(r_text)
@@ -987,11 +997,11 @@ class Jac(object):
             retries = 3
             for attempt in range(retries):
                 try:
-                    attempt_str = '' if attempt == 0 else " (attempt #" + str(attempt) + "/" + str(attempt) + ")"
+                    attempt_str = '' if attempt == 0 else " (attempt " + str(attempt + 1) + "/" + str(retries) + ")"
                     logging.info('count_id: ' + str(r['count']) + attempt_str)
                     self.fill_by_case_number(out_dir_htm, r)
                     break
-                except Exception as e:
+                except requests.exceptions.Timeout as e:
                     logging.error("exception: " + str(e))
 
         logging.info('sheet fetch complete')
@@ -1002,12 +1012,16 @@ class Jac(object):
 
     def fill_by_case_number(self, out_dir_htm, r):
         logging.info('case_number: ' + r['case_number'])
-        bclerk_efacts = BclerkEfacts(self.file_system_infra, self.bclerk_efacts_infra)
-        be = bclerk_efacts.pre_cache(r['case_number'], out_dir_htm)
-        be2 = bclerk_efacts.fetch_case_info(be['court_type'], be['id2'], be['out_dir'],
+        bclerk_efacts = BclerkEfacts(self.bclerk_efacts_infra)
+        be = bclerk_efacts.pre_cache(r['case_number'])
+        be2 = bclerk_efacts.fetch_case_info(be['court_type'], be['id2'], out_dir_htm,
                                             be['seq_number'], be['year'])
+        self.file_system_infra.save_lines_to_file(be2['case_info_html_filepath'], 'wb', be2['case_info_html_content'])
+
         bclerk_efacts_info = bclerk_efacts.fetch_reg_actions(be['court_type'], be2['jsessionid'],
-                                                             be['seq_number'], be['year'], be['out_dir'], be['id2'])
+                                                             be['seq_number'], be['year'], out_dir_htm, be['id2'])
+        self.file_system_infra.save_lines_to_file(bclerk_efacts_info['reg_actions_html_filepath'], 'w',
+                                                  bclerk_efacts_info['reg_actions_html_content'])
         r['latest_amount_due'] = bclerk_efacts_info['latest_amount_due']
         r['orig_mtg_link'] = bclerk_efacts_info['orig_mtg_link']
         r['orig_mtg_tag'] = bclerk_efacts_info['orig_mtg_tag']
@@ -1101,7 +1115,7 @@ class Jac(object):
         datasets = []
         logging.info('date_strings_to_add: ' + str(dates))
         logging.info('abc: ' + abc)
-        # mrs = [mrs[0]]  # temp hack
+        mrs = [mrs[0]]  # temp hack
         # mrs = mrs[:10]  # temp hack
         datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in dates])
 
