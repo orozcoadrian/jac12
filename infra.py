@@ -35,7 +35,6 @@ class FileSystemInfrastructure(object):
 class BclerkPublicRecordsInfrastructure(object):
     @staticmethod
     def get_resp_from_request(request_info):
-        # request_info = self.get_request_info(case)
         browser = RoboBrowser(history=True, parser='html.parser')
         browser.open(request_info['uri'])
         form = browser.get_forms()[0]
@@ -49,40 +48,42 @@ class BclerkPublicRecordsInfrastructure(object):
 
 
 class BclerkEfactsInfrastructure(object):
-    @staticmethod
-    def get_case_info_resp_from_req(data_, headers_, stream_, timeout_, url_):
-        r = requests.post(url_, data_, headers=headers_,
-                          stream=stream_, timeout=timeout_)
+    def __init__(self):
+        self.s = requests.session()
+
+    def get_case_info_resp_from_req(self, data_, headers_, stream_, timeout_, url_):
+        r = self.s.post(url_, data_, headers=headers_,
+                        stream=stream_, timeout=timeout_)
         return r
 
-    @staticmethod
-    def get_reg_actions_resp_from_req(data_, headers_, url_):
-        r = requests.get(url_, data_,
-                         headers=headers_, stream=True)
-        r_text = r.text
-        return r_text
+    def get_reg_actions_resp_from_req(self, data_, headers_, url_):
+        r = self.s.get(url_, data=data_, headers=headers_, stream=True)
+        return r.text
 
 
 class BcpaoInfrastructure(object):
-    @staticmethod
-    def get_res_from_req(req):
+    def __init__(self):
+        self.s = requests.session()
+
+    def get_res_from_req(self, req):
         logging.debug('***** before requests.get 1')
-        ret = requests.get(req['url'], headers=req['headers'], timeout=10)
+        ret = self.s.get(req['url'], headers=req['headers'], timeout=10)
         logging.debug('*** after')
         return ret
 
-    @staticmethod
-    def get_acct_by_legal_resp_from_req(url2, headers):
+    def get_acct_by_legal_resp_from_req(self, url2, headers):
         logging.debug('***** before requests.get 2')
-        ret = requests.get(url2, headers=headers, timeout=10)  # timeout in seconds
+        ret = self.s.get(url2, headers=headers, timeout=10)  # timeout in seconds
         logging.debug('*** after')
         return ret
 
 
 class TaxesInfrastructure(object):
-    @staticmethod
-    def get_resp_from_req(url):
-        r = requests.post(url, data='', headers='', stream=True, timeout=10)
+    def __init__(self):
+        self.s = requests.session()
+
+    def get_resp_from_req(self, url):
+        r = self.s.post(url, data='', headers='', stream=True, timeout=10)
         return r.content
 
 

@@ -108,9 +108,9 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(ret, [])
 
     def test_bclerk_efacts_pre_cache(self):
-        ret = BclerkEfacts().pre_cache('05-2008-CA-006267-XXXX-XX', 'test_out_dir')
+        ret = BclerkEfacts().pre_cache('05-2008-CA-006267-XXXX-XX')
         self.assertEquals(ret,
-                          {'out_dir': 'test_out_dir', 'year': '2008', 'seq_number': '006267', 'id2': '2008_CA_006267',
+                          {'year': '2008', 'seq_number': '006267', 'id2': '2008_CA_006267',
                            'court_type': 'CA'})
 
     def test_bclerk_efacts_get_request_info(self):
