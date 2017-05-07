@@ -37,9 +37,6 @@ class Item(object):
 
 
 class FilterCancelled(object):
-    def __init__(self, args):
-        self.args = args
-
     @staticmethod
     def apply(mrs):
         return [x for x in mrs if 'CANCELLED' not in x['comment']]
@@ -978,17 +975,7 @@ class Jac(object):
         logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
 
-    def get_mainsheet_dataset(self, mrs, out_dir, date_to_add):
-        logging.info('**get_mainsheet_dataset: ' + str(date_to_add))
-
-        filter_by_dates = FilterByDates()
-        filter_by_dates.set_dates([date_to_add])
-        mrs = filter_by_dates.apply(mrs)
-
-        sheet_name = date_to_add.strftime("%m-%d")
-        out_dir_htm = out_dir + '/' + sheet_name + '/html_files'
-        os.makedirs(out_dir_htm, exist_ok=True)
-
+    def get_dataset(self, mrs, out_dir_htm, sheet_name):
         for i, r in enumerate(mrs):
 
             # if r['count'] not in [7,15,16]:  # temp hack
@@ -1003,9 +990,6 @@ class Jac(object):
                     break
                 except requests.exceptions.Timeout as e:
                     logging.error("exception: " + str(e))
-
-        logging.info('sheet fetch complete')
-        logging.info('sheet num records: ' + str(len(mrs)))
         sheet_builder = XlBuilder(sheet_name)
         dataset = sheet_builder.add_sheet(mrs)
         return dataset
@@ -1046,8 +1030,8 @@ class Jac(object):
             # if i == 0:  # temp hack
             #     break
 
-    def get_non_cancelled_nums(self, args, mrs):
-        mrs = FilterCancelled(args).apply(mrs)
+    def get_non_cancelled_nums(self, mrs):
+        mrs = FilterCancelled().apply(mrs)
         date_counts = pprint.pformat(self.get_dates_count_map(mrs)).replace('\n', '<br>').replace(
             'datetime(', '').replace(', 0, 0', '').replace(', ', '/').replace(')', '')
         return date_counts
@@ -1087,54 +1071,55 @@ class Jac(object):
         args = parser.parse_args()
 
         logging.debug('jac starting')
-        timestamp = time.strftime("%Y-%m-%d__%H-%M-%S")
 
         logging.info('args: ' + str(args))
 
+        dates = MyDate().get_next_dates(date.today())
+
         s = Foreclosures(self.fore_infra)
         mrs = s.get_items()
-        all_foreclosures = mrs[:]
 
-        dates = MyDate().get_next_dates(date.today())
+        timestamp = time.strftime("%Y-%m-%d__%H-%M-%S")
+        all_foreclosures = mrs[:]
+        date_counts = self.get_non_cancelled_nums(all_foreclosures)
+
         logging.info(dates)
         short_date_strings_to_add = self.get_short_date_strings_to_add(dates)
         logging.info('short_date_strings_to_add: ' + str(short_date_strings_to_add))
 
-        abc = '-'.join(short_date_strings_to_add[0:1])
+        run_tag = '-'.join(short_date_strings_to_add[0:1])
 
         parent_out_dir = 'outputs'
         out_dir = parent_out_dir + '/' + timestamp
         os.makedirs(out_dir)
         logging.info(os.path.abspath(out_dir))
 
-        the_tag = abc
-        filename = the_tag + '.xls'
-        out_file = out_dir + '/' + filename
-        book = Workbook()
+        filename = run_tag + '.xls'
 
-        datasets = []
         logging.info('date_strings_to_add: ' + str(dates))
-        logging.info('abc: ' + abc)
+        logging.info('abc: ' + run_tag)
         mrs = [mrs[0]]  # temp hack
         # mrs = mrs[:10]  # temp hack
-        datasets.extend([self.get_mainsheet_dataset(mrs, out_dir, date_str) for date_str in dates])
 
-        for dataset in datasets:
-            Xl().add_data_set_sheet(dataset, book)
-        book.save(out_file)
+        single_date_item_sets = []
+        for date_str in dates:
+            filter_by_dates = FilterByDates()
+            filter_by_dates.set_dates([date_str])
+            sheet_name = date_str.strftime("%m-%d")
+            single_date_item_sets.append({'dataset_title': sheet_name, 'items': filter_by_dates.apply(mrs)})
 
-        date_counts = self.get_non_cancelled_nums(args, all_foreclosures)
+        self.create_workbook_from_item_sets(filename, out_dir, single_date_item_sets)
 
-        body = self.get_email_body(abc, date_counts, filename, mrs)
+        body = self.get_email_body(run_tag, date_counts, filename, mrs)
 
-        file_paths = [out_file]
+        file_paths = [(out_dir + '/' + filename)]
         if args.zip:
             def zipdir(path, azip):
                 for root, the_dirs, files in os.walk(path):
                     for f in files:
                         azip.write(os.path.join(root, f))
 
-            zip_filename = abc + '.zip'
+            zip_filename = run_tag + '.zip'
             zip_filepath = parent_out_dir + '/' + zip_filename
             with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 zipdir(out_dir, zipf)
@@ -1143,7 +1128,7 @@ class Jac(object):
 
             file_paths.append(final_zip_path)
 
-        subject = '[jac biweekly report]' + ' for: ' + abc
+        subject = '[jac biweekly report]' + ' for: ' + run_tag
 
         if args.email and args.passw:
             self.my_send_mail(file_paths, args.passw, subject, body)
@@ -1154,8 +1139,27 @@ class Jac(object):
         logging.info('END')
         return 0
 
-    def get_email_body(self, abc, date_counts, filename, mrs):
-        body = 'this result is for: ' + abc
+    def create_workbook_from_item_sets(self, filename, out_dir, single_date_item_sets):
+        datasets = []
+        for single_date_item_set in single_date_item_sets:
+            sheet_name = single_date_item_set['dataset_title']
+            out_dir_htm = out_dir + '/' + sheet_name + '/html_files'
+            os.makedirs(out_dir_htm, exist_ok=True)
+
+            mrs_for_one_day = single_date_item_set['items']
+            logging.info('**get_dataset: ' + sheet_name)
+            dataset = self.get_dataset(mrs_for_one_day, out_dir_htm, sheet_name)
+
+            logging.info('sheet fetch complete')
+            logging.info('sheet num records: ' + str(len(mrs_for_one_day)))
+            datasets.append(dataset)
+        book = Workbook()
+        for dataset in datasets:
+            Xl().add_data_set_sheet(dataset, book)
+        book.save(out_dir + '/' + filename)
+
+    def get_email_body(self, run_tag, date_counts, filename, mrs):
+        body = 'this result is for: ' + run_tag
         body += '<br>total records: ' + str(len(mrs))
         body += '<br><br>'
         body += 'the following summarizes how many not-cancelled items there are per month in the '

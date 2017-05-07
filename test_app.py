@@ -203,7 +203,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual('0', first_data_row[20].get_display())
 
     def test_FilterCancelled(self):
-        ret = FilterCancelled(None).apply([dict(comment='', val=2), dict(comment='CANCELLED', val=3)])
+        ret = FilterCancelled().apply([dict(comment='', val=2), dict(comment='CANCELLED', val=3)])
         self.assertEquals(ret, [{'comment': '', 'val': 2}])
 
     def test_FilterByDates(self):
@@ -344,8 +344,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEquals({date(2017, 4, 26): 1, date(2017, 5, 3): 1}, ret)
 
     def test_jac_get_non_cancelled_nums(self):
-        ret = Jac().get_non_cancelled_nums(None, [{'comment': '', 'foreclosure_sale_date': date(2017, 4, 26)},
-                                                  {'comment': 'CANCELLED', 'foreclosure_sale_date': date(2017, 4, 27)}])
+        ret = Jac().get_non_cancelled_nums([{'comment': '', 'foreclosure_sale_date': date(2017, 4, 26)},
+                                            {'comment': 'CANCELLED', 'foreclosure_sale_date': date(2017, 4, 27)}])
         self.assertEquals('{datetime.date(2017/4/26: 1}', ret)
 
     def test_jac_get_email_body(self):
