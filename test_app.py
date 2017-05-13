@@ -487,6 +487,13 @@ class MyTestCase(unittest.TestCase):
                             'url2': 'https://www.bcpao.us/api/v1/search?parcel=28-36-33-50-%2A-2&activeonly=true&size=10&page=1'}],
                           ret_reqs)
 
+    def test_bcpao_get_bcpao_searches_3(self):
+        l = BclerkPublicRecords.get_legal_from_str(
+            'LT 204 PINEWOOD I & II TOWNHOMES')
+        ret = Bcpao().get_bcpao_searches(l)
+        ret_reqs = [x.request for x in ret]
+        self.assertEquals([None, None], ret_reqs)
+
 
 if __name__ == '__main__':
     unittest.main()

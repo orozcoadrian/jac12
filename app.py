@@ -448,42 +448,43 @@ class BcpaoByParcelId(object):
 
     @staticmethod
     def get_acct_by_legal_request(legal_arg):
-        arry_pid_parts = [legal_arg['t'], legal_arg['r'], legal_arg['s'], legal_arg['subid'], legal_arg['blk'],
-                          legal_arg['lt']]
+        if all(k in legal_arg for k in ['t', 'r', 's', 'subid', 'blk', 'lt']):
+            arry_pid_parts = [legal_arg['t'], legal_arg['r'], legal_arg['s'], legal_arg['subid'], legal_arg['blk'],
+                              legal_arg['lt']]
 
-        # REPLACE BLANK PID PARTS WITH ASTERISK
-        str_pid = ''
-        pid_parts_count = 0
-        for i in range(len(arry_pid_parts)):
-            if arry_pid_parts[i] is None or arry_pid_parts[i] == '--':
-                str_part = '*'
-            else:
-                str_part = arry_pid_parts[i]
-                pid_parts_count += 1
-            # Build PID string
-            str_pid += str_part + '-'
+            # REPLACE BLANK PID PARTS WITH ASTERISK
+            str_pid = ''
+            pid_parts_count = 0
+            for i in range(len(arry_pid_parts)):
+                if arry_pid_parts[i] is None or arry_pid_parts[i] == '--':
+                    str_part = '*'
+                else:
+                    str_part = arry_pid_parts[i]
+                    pid_parts_count += 1
+                # Build PID string
+                str_pid += str_part + '-'
 
-        # IF LAST CHARACTER IN PID STRING IS -, REMOVE IT
-        if str_pid.endswith('-'):
-            str_pid = str_pid[:-1]
+            # IF LAST CHARACTER IN PID STRING IS -, REMOVE IT
+            if str_pid.endswith('-'):
+                str_pid = str_pid[:-1]
 
-        # IF LAST CHARACTER IN PID STRING IS -* or *-, REMOVE IT
-        if str_pid.endswith('-*') or str_pid.endswith('*-'):
-            str_pid = str_pid[:-2]
+            # IF LAST CHARACTER IN PID STRING IS -* or *-, REMOVE IT
+            if str_pid.endswith('-*') or str_pid.endswith('*-'):
+                str_pid = str_pid[:-2]
 
-        arry_pid_parts_str = str_pid
+            arry_pid_parts_str = str_pid
 
-        bcpao_search_endpoint = 'https://www.bcpao.us/api/v1/search?'
-        params = OrderedDict()
-        params['parcel'] = arry_pid_parts_str
-        params['activeonly'] = 'true'
-        params['size'] = '10'
-        params['page'] = '1'
+            bcpao_search_endpoint = 'https://www.bcpao.us/api/v1/search?'
+            params = OrderedDict()
+            params['parcel'] = arry_pid_parts_str
+            params['activeonly'] = 'true'
+            params['size'] = '10'
+            params['page'] = '1'
 
-        url2 = bcpao_search_endpoint + urllib.parse.urlencode(params)
-        ret = {'url2': url2, 'headers': {'Accept': 'application/json'}, 'endpoint': bcpao_search_endpoint,
-               'params': params}
-        return ret
+            url2 = bcpao_search_endpoint + urllib.parse.urlencode(params)
+            ret = {'url2': url2, 'headers': {'Accept': 'application/json'}, 'endpoint': bcpao_search_endpoint,
+                   'params': params}
+            return ret
 
     @staticmethod
     def parse_acct_by_legal_response(resp):
@@ -978,8 +979,8 @@ class Jac(object):
     def get_dataset(self, mrs, out_dir_htm, sheet_name):
         for i, r in enumerate(mrs):
 
-            # if r['count'] not in [7,15,16]:  # temp hack
-            #     continue
+            if r['count'] not in [71]:  # temp hack
+                continue
 
             retries = 3
             for attempt in range(retries):
@@ -1098,7 +1099,7 @@ class Jac(object):
 
         logging.info('date_strings_to_add: ' + str(dates))
         logging.info('abc: ' + run_tag)
-        mrs = [mrs[0]]  # temp hack
+        # mrs = [mrs[0]]  # temp hack
         # mrs = mrs[:10]  # temp hack
 
         single_date_item_sets = []
