@@ -102,11 +102,20 @@ class XlBuilder(object):
         return ret
 
     @staticmethod
-    def get_bclerk_name_url(name):  # TODO: move this to xl3
-        return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?' \
-               'bd=1%2F1%2F1981&ed=5%2F31%2F2014&' \
-               'n=' + urllib.parse.quote(name) + '&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&' \
-                                                 'st=fullname&ss=ALL%20DOCUMENT%20TYPES'
+    def get_bclerk_name_url(name):
+        search_endpoint = 'http://web1.brevardclerk.us/oncoreweb/search.aspx?'
+        params = OrderedDict()
+        params['bd'] = '1/1/1981'
+        params['ed'] = '5/31/2014'
+        params['n'] = urllib.parse.quote(name)
+        params['bt'] = 'OR'
+        params['d'] = '2/5/2015'
+        params['pt'] = '-1'
+        params['cn'] = ''
+        params['dt'] = 'ALL%20DOCUMENT%20TYPES'
+        params['st'] = 'fullname'
+        params['ss'] = 'ALL%20DOCUMENT%20TYPES'
+        return search_endpoint + urllib.parse.urlencode(params)
 
     @staticmethod
     def get_case_number_url(cn):
@@ -1153,5 +1162,5 @@ class Jac(object):
 
     def get_by_case_number(self, case_number):
         r = {'case_number': case_number}
-        self.fill_by_case_number(None, r)
+        self.fill_by_case_number('', r)
         print('r: ' + str(r))
