@@ -1,7 +1,9 @@
+import argparse
 import pprint
 import unittest
 from collections import OrderedDict
 from datetime import date
+from unittest.mock import MagicMock
 
 from xlwt import Formula
 
@@ -493,6 +495,30 @@ class MyTestCase(unittest.TestCase):
         ret = Bcpao().get_bcpao_searches(l)
         ret_reqs = [x.request for x in ret]
         self.assertEquals([None, None], ret_reqs)
+
+    def test_jac_go(self):
+        class StubForeInfra(object):
+            pass
+
+        class StubFileInfra(object):
+            pass
+
+        sfi = StubFileInfra()
+        sfi.do_mkdirs = MagicMock()
+
+        class StubTime(object):
+            pass
+
+        stub_fore_infra = StubForeInfra()
+        stub_fore_infra.get_items_resp_from_req = MagicMock(return_value='<html></html>')
+
+        stub_time = StubTime()
+        stub_time.time = MagicMock(return_value=3)
+        stub_time.time_strftime = MagicMock(return_value='2017-05-13__19-54-16')
+
+        Jac(None, stub_fore_infra, sfi, None, None, None, None, None, stub_time).go2(
+            argparse.Namespace(zip=False, email=False))
+        sfi.do_mkdirs.assert_called_once_with('outputs/2017-05-13__19-54-16')
 
 
 if __name__ == '__main__':

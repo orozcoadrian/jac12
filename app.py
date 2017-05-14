@@ -6,11 +6,9 @@ import logging
 import os
 import pprint
 import re
-import shutil
 import sys
 import time
 import urllib.parse
-import zipfile
 from collections import OrderedDict
 from datetime import datetime, date, timedelta
 
@@ -963,7 +961,7 @@ class Foreclosures(object):
 
 class Jac(object):
     def __init__(self, email_infra=None, fore_infra=None, file_system_infra=None, bclerk_efacts_infra=None,
-                 bcpr_infra=None, taxes_infra=None, bcpao_infra=None):
+                 bcpr_infra=None, taxes_infra=None, bcpao_infra=None, zip_infra=None, time_infra=None):
         self.legal = None
         self.legals = None
         self.email_infra = email_infra
@@ -973,14 +971,20 @@ class Jac(object):
         self.bcpr_infra = bcpr_infra
         self.taxes_infra = taxes_infra
         self.bcpao_infra = bcpao_infra
+        self.zip_infra = zip_infra
+        self.time_infra = time_infra
+        self.my_filter = None
         logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
+
+    def set_filter(self, my_filter):
+        self.my_filter = my_filter
 
     def get_dataset(self, mrs, out_dir_htm, sheet_name):
         for i, r in enumerate(mrs):
 
-            if r['count'] not in [71]:  # temp hack
-                continue
+            # if r['count'] not in [71]:  # temp hack
+            #     continue
 
             retries = 3
             for attempt in range(retries):
@@ -1062,80 +1066,57 @@ class Jac(object):
         return [x.strftime("%m.%d.%y") for x in dates]
 
     def go(self):
-        logging.info('START')
-        start = time.time()
         parser = argparse.ArgumentParser()
         parser.add_argument("--zip", action='store_true', help="do zip.")
         parser.add_argument("--email", action='store_true', help="do email.")
         parser.add_argument("--passw", help="email password.")
 
         args = parser.parse_args()
+        return self.go2(args)
 
+    def go2(self, args):
+        logging.info('START')
+        start = self.time_infra.time()
         logging.debug('jac starting')
-
         logging.info('args: ' + str(args))
-
         dates = MyDate().get_next_dates(date.today())
-
         s = Foreclosures(self.fore_infra)
         mrs = s.get_items()
-
-        timestamp = time.strftime("%Y-%m-%d__%H-%M-%S")
+        timestamp = self.time_infra.time_strftime('%Y-%m-%d__%H-%M-%S')  # time.strftime("%Y-%m-%d__%H-%M-%S")
         all_foreclosures = mrs[:]
         date_counts = self.get_non_cancelled_nums(all_foreclosures)
-
         logging.info(dates)
         short_date_strings_to_add = self.get_short_date_strings_to_add(dates)
         logging.info('short_date_strings_to_add: ' + str(short_date_strings_to_add))
-
         run_tag = '-'.join(short_date_strings_to_add[0:1])
-
         parent_out_dir = 'outputs'
         out_dir = parent_out_dir + '/' + timestamp
-        os.makedirs(out_dir)
+        self.file_system_infra.do_mkdirs(out_dir)
+        # os.makedirs(out_dir)
         logging.info(os.path.abspath(out_dir))
-
         filename = run_tag + '.xls'
-
         logging.info('date_strings_to_add: ' + str(dates))
         logging.info('abc: ' + run_tag)
         # mrs = [mrs[0]]  # temp hack
         # mrs = mrs[:10]  # temp hack
-
+        mrs = [x for x in mrs if self.my_filter(x)]
         single_date_item_sets = []
         for date_str in dates:
             filter_by_dates = FilterByDates()
             filter_by_dates.set_dates([date_str])
             sheet_name = date_str.strftime("%m-%d")
             single_date_item_sets.append({'dataset_title': sheet_name, 'items': filter_by_dates.apply(mrs)})
-
         self.create_workbook_from_item_sets(filename, out_dir, single_date_item_sets)
-
         body = self.get_email_body(run_tag, date_counts, filename, mrs)
-
         file_paths = [(out_dir + '/' + filename)]
         if args.zip:
-            def zipdir(path, azip):
-                for root, the_dirs, files in os.walk(path):
-                    for f in files:
-                        azip.write(os.path.join(root, f))
-
-            zip_filename = run_tag + '.zip'
-            zip_filepath = parent_out_dir + '/' + zip_filename
-            with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                zipdir(out_dir, zipf)
-            final_zip_path = out_dir + '/' + zip_filename
-            shutil.move(zip_filepath, final_zip_path)
+            final_zip_path = self.zip_infra.do_zip(out_dir, parent_out_dir, run_tag)
 
             file_paths.append(final_zip_path)
-
         subject = '[jac biweekly report]' + ' for: ' + run_tag
-
         if args.email and args.passw:
             self.my_send_mail(file_paths, args.passw, subject, body)
-
         logging.info(body)
-
         logging.info('duration %s' % timedelta(seconds=time.time() - start))
         logging.info('END')
         return 0

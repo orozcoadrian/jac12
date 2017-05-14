@@ -1,7 +1,10 @@
 import email
 import logging
 import os
+import shutil
 import smtplib
+import time
+import zipfile
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -30,6 +33,9 @@ class FileSystemInfrastructure(object):
         with open(file_path, open_mode) as handle:
             for bl in content_:
                 handle.write(bl)
+
+    def do_mkdirs(self, out_dir):
+        os.makedirs(out_dir)
 
 
 class BclerkPublicRecordsInfrastructure(object):
@@ -113,3 +119,27 @@ class EmailInfrastructure(object):
         smtp.login(username, password)
         smtp.sendmail(send_from, send_to, msg.as_string())
         smtp.close()
+
+
+class ZipInfrastructure(object):
+    def do_zip(self, out_dir, parent_out_dir, run_tag):
+        def zipdir(path, azip):
+            for root, the_dirs, files in os.walk(path):
+                for f in files:
+                    azip.write(os.path.join(root, f))
+
+        zip_filename = run_tag + '.zip'
+        zip_filepath = parent_out_dir + '/' + zip_filename
+        with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            zipdir(out_dir, zipf)
+        final_zip_path = out_dir + '/' + zip_filename
+        shutil.move(zip_filepath, final_zip_path)
+        return final_zip_path
+
+
+class TimeInfrastructure(object):
+    def time(self):
+        return time.time()
+
+    def time_strftime(self, fmt):
+        return time.strftime(fmt)
