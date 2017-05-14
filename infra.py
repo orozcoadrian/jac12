@@ -34,7 +34,8 @@ class FileSystemInfrastructure(object):
             for bl in content_:
                 handle.write(bl)
 
-    def do_mkdirs(self, out_dir):
+    @staticmethod
+    def do_mkdirs(out_dir):
         os.makedirs(out_dir)
 
 
@@ -122,7 +123,8 @@ class EmailInfrastructure(object):
 
 
 class ZipInfrastructure(object):
-    def do_zip(self, out_dir, parent_out_dir, run_tag):
+    @staticmethod
+    def do_zip(out_dir, parent_out_dir, run_tag):
         def zipdir(path, azip):
             for root, the_dirs, files in os.walk(path):
                 for f in files:
@@ -138,8 +140,10 @@ class ZipInfrastructure(object):
 
 
 class TimeInfrastructure(object):
-    def time(self):
+    @staticmethod
+    def time():
         return time.time()
 
-    def time_strftime(self, fmt):
+    @staticmethod
+    def time_strftime(fmt):
         return time.strftime(fmt)

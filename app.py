@@ -7,7 +7,6 @@ import os
 import pprint
 import re
 import sys
-import time
 import urllib.parse
 from collections import OrderedDict
 from datetime import datetime, date, timedelta
@@ -1092,7 +1091,6 @@ class Jac(object):
         parent_out_dir = 'outputs'
         out_dir = parent_out_dir + '/' + timestamp
         self.file_system_infra.do_mkdirs(out_dir)
-        # os.makedirs(out_dir)
         logging.info(os.path.abspath(out_dir))
         filename = run_tag + '.xls'
         logging.info('date_strings_to_add: ' + str(dates))
@@ -1117,7 +1115,7 @@ class Jac(object):
         if args.email and args.passw:
             self.my_send_mail(file_paths, args.passw, subject, body)
         logging.info(body)
-        logging.info('duration %s' % timedelta(seconds=time.time() - start))
+        logging.info('duration %s' % timedelta(seconds=self.time_infra.time() - start))
         logging.info('END')
         return 0
 

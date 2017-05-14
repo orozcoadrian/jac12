@@ -513,7 +513,8 @@ class MyTestCase(unittest.TestCase):
         stub_fore_infra.get_items_resp_from_req = MagicMock(return_value='<html></html>')
 
         stub_time = StubTime()
-        stub_time.time = MagicMock(return_value=3)
+        stub_time.time = MagicMock()
+        stub_time.time.side_effect = [3, 5]  # list of values to return on each call
         stub_time.time_strftime = MagicMock(return_value='2017-05-13__19-54-16')
 
         Jac(None, stub_fore_infra, sfi, None, None, None, None, None, stub_time).go2(
