@@ -404,11 +404,6 @@ class BcpaoBySubOrT(object):
         if 'subd' in legal_arg or 't' in legal_arg:
             legal = (legal_arg['subd'], legal_arg['lt'], legal_arg['blk'], legal_arg['pb'], legal_arg['pg'],
                      legal_arg['s'], legal_arg['t'], legal_arg['r'], legal_arg['subid'])
-            use_local_logging_config = False
-            if use_local_logging_config:
-                logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
-                logger = logging.getLogger(__name__)
-                logger.info('START')
             sub, lot, block, pb, pg, s, t, r, subid = legal
             sub = sub.replace(u'\xc2', u'').encode('utf-8')
             bcpao_search_endpoint = 'https://www.bcpao.us/api/v1/search?'
@@ -619,10 +614,6 @@ class BclerkPublicRecords(object):
         self.bcpr_infra = bcpr_infra
 
     @staticmethod
-    def get_name():
-        return 'Legal'
-
-    @staticmethod
     def get_request_info(case):
         ret = {'uri': 'http://web1.brevardclerk.us/oncoreweb/search.aspx', 'form': {}}
         ret['form']['txtCaseNumber'] = case
@@ -731,10 +722,6 @@ class BclerkEfacts(object):
         self.bclerk_efacts_infra = bclerk_efacts_infra
 
     @staticmethod
-    def get_name():
-        return 'Cfm'
-
-    @staticmethod
     def get_url():
         return 'https://vweb1.brevardclerk.us/facts/d_caseno.cfm'
 
@@ -836,29 +823,23 @@ class BclerkEfacts(object):
         request_info = self.get_request_info(court_type, seq_number, year)
         resp = dict(jsessionid=None)
         if request_info is not None:
-            url_ = request_info['url']
-            data_ = request_info['data']
-            headers_ = request_info['headers']
-            stream_ = request_info['stream']
-            timeout_ = request_info['timeout']
-            r = self.bclerk_efacts_infra.get_case_info_resp_from_req(data_, headers_, stream_, timeout_, url_)
+            r = self.bclerk_efacts_infra.get_case_info_resp_from_req(request_info['data'], request_info['headers'],
+                                                                     request_info['stream'], request_info['timeout'],
+                                                                     request_info['url'])
             resp = self.parse_resp2(r)
-            if out_dir:
-                resp['case_info_html_filepath'] = out_dir + '/' + id2 + '_case_info.htm'
-                resp['case_info_html_content'] = ContentHolder(resp['content'])
+            resp['case_info_html_filepath'] = out_dir + '/' + id2 + '_case_info.htm'
+            resp['case_info_html_content'] = ContentHolder(resp['content'])
         return resp
 
     def fetch_reg_actions(self, court_type, jsessionid, seq_number, year, out_dir, id2):
         reg_actions_req_info = self.get_reg_actions_req_info(court_type, jsessionid, seq_number, year)
-        url_ = reg_actions_req_info['url']
-        data_ = reg_actions_req_info['data']
-        headers_ = reg_actions_req_info['headers']
-        r_text = self.bclerk_efacts_infra.get_reg_actions_resp_from_req(data_, headers_, url_)
+        r_text = self.bclerk_efacts_infra.get_reg_actions_resp_from_req(reg_actions_req_info['data'],
+                                                                        reg_actions_req_info['headers'],
+                                                                        reg_actions_req_info['url'])
 
         resp = self.parse_reg_actions_response(r_text)
-        if out_dir:
-            resp['reg_actions_html_filepath'] = out_dir + '/' + id2 + '_reg_actions.htm'
-            resp['reg_actions_html_content'] = ContentHolder(r_text)
+        resp['reg_actions_html_filepath'] = out_dir + '/' + id2 + '_reg_actions.htm'
+        resp['reg_actions_html_content'] = ContentHolder(r_text)
         return resp
 
     def parse_reg_actions_response(self, r_text):
