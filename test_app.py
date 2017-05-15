@@ -140,7 +140,13 @@ class MyTestCase(unittest.TestCase):
                               'latest_amount_due': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7tioo4AAF5DuCsZjF66dIw==&theKey=14mhPOwb8DAlMYwyf4HSrg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997'})
 
     def test_xlbuilder_with_rows(self):
-        instance = XlBuilder('test_name')
+        class StubTime(object):
+            pass
+
+        stub_time = StubTime()
+        stub_time.time = MagicMock()
+        stub_time.time_strftime = MagicMock(return_value='05/13/2017')
+        instance = XlBuilder('test_name', stub_time)
         data_set = instance.add_sheet([{'case_number': '05-2008-CA-033772-XXXX-XX',
                                         'taxes_url': 'https://brevard.county-taxes.com/public/real_estate/parcels/2627712',
                                         'comment': '\xa0', 'taxes_value': '0', 'legals': [],
@@ -290,7 +296,15 @@ class MyTestCase(unittest.TestCase):
                 return self.rows
 
         tsheet = TestSheet()
-        ds = XlBuilder('a_name').add_sheet([{'case_number': '05-2008-CA-033772-XXXX-XX',
+
+        class StubTime(object):
+            pass
+
+        stub_time = StubTime()
+        stub_time.time = MagicMock()
+        stub_time.time_strftime = MagicMock(return_value='05/13/2017')
+
+        ds = XlBuilder('a_name', stub_time).add_sheet([{'case_number': '05-2008-CA-033772-XXXX-XX',
                                              'taxes_url': 'https://brevard.county-taxes.com/pubte/parcels/2627712',
                                              'comment': '', 'taxes_value': '0', 'legals': [],
                                              'bcpao_item': {'frame code': 'MASNRYCONC, WOOD FRAME', 'zip_code': '32940',
@@ -332,8 +346,8 @@ class MyTestCase(unittest.TestCase):
         Xl().add_data_set_sheet2(ds, tsheet)
         self.assertEquals(str(tsheet.get_rows()), "{"
                                                   "0: TestRow({0: 'high', 1: 'win', 2: 'HYPERLINK(\"http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html\";\"case_number\")', 3: 'case_title', 4: 'fc._sale_date', 5: 'HYPERLINK(\"https://vweb1.brevardclerk.us/facts/caseno.cfm\";\"case_info\")', 6: 'HYPERLINK(\"https://vweb1.brevardclerk.us/facts/caseno.cfm\";\"reg_actions\")', 7: 'count', 8: 'address', 9: 'zip', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx\";\"liens-name\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch\";\"bcpao\")', 12: 'f_code', 13: 'owed_link', 14: 'owed', 15: 'assessed', 16: 'base_area', 17: 'year built', 18: 'owed - ass', 19: 'orig_mtg', 20: 'taxes'}), "
-                                                  "1: TestRow({0: '', 1: '', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL DOCUMENT TYPES&st=casenumber&ss=ALL DOCUMENT TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '2778 WYNDHAM WAY MELBOURNE FL 32940', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(P2)),NOT(ISBLANK(Q2))), P2-Q2, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'}), "
-                                                  "2: TestRow({0: '', 1: 'CANCELLED', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL DOCUMENT TYPES&st=casenumber&ss=ALL DOCUMENT TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(P3)),NOT(ISBLANK(Q3))), P3-Q3, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'})"
+                                                  "1: TestRow({0: '', 1: '', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '2778 WYNDHAM WAY MELBOURNE FL 32940', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(P2)),NOT(ISBLANK(Q2))), P2-Q2, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'}), "
+                                                  "2: TestRow({0: '', 1: 'CANCELLED', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(P3)),NOT(ISBLANK(Q3))), P3-Q3, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'})"
                                                   "}")
 
     def test_foreclosures_add_foreclosures(self):

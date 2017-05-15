@@ -51,8 +51,9 @@ class FilterByDates(object):
 
 
 class XlBuilder(object):
-    def __init__(self, sheet_name):
+    def __init__(self, sheet_name, time_infra):
         self.sheet_name = sheet_name
+        self.time_infra = time_infra
         self.args = None
         self.column_handlers = {}
         self.headers = []
@@ -101,12 +102,12 @@ class XlBuilder(object):
         ret = DataSet(self.get_sheet_name(), rows)
         return ret
 
-    @staticmethod
-    def get_bclerk_name_url(name):
+    def get_bclerk_name_url(self, name):
+        today = self.time_infra.time_strftime('%m/%d/%Y')
         search_endpoint = 'http://web1.brevardclerk.us/oncoreweb/search.aspx?'
         params = OrderedDict()
         params['bd'] = '1/1/1981'
-        params['ed'] = '5/31/2014'
+        params['ed'] = today
         params['n'] = name
         params['bt'] = 'OR'
         params['d'] = '2/5/2015'
@@ -117,19 +118,21 @@ class XlBuilder(object):
         params['ss'] = 'ALL DOCUMENT TYPES'
         return search_endpoint + urllib.parse.urlencode(params)
 
-    @staticmethod
-    def get_case_number_url(cn):
-        return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?' \
-               'bd=1%2F1%2F1981&' \
-               'ed=5%2F31%2F2015&' \
-               'n=&' \
-               'bt=OR&' \
-               'd=5%2F31%2F2014&' \
-               'pt=-1&' \
-               'cn=' + cn + '&' \
-                            'dt=ALL DOCUMENT TYPES&' \
-                            'st=casenumber&' \
-                            'ss=ALL DOCUMENT TYPES'
+    def get_case_number_url(self, cn):
+        today = self.time_infra.time_strftime('%m/%d/%Y')
+        search_endpoint = 'http://web1.brevardclerk.us/oncoreweb/search.aspx?'
+        params = OrderedDict()
+        params['bd'] = '1/1/1981'
+        params['ed'] = today
+        params['n'] = ''
+        params['bt'] = 'OR'
+        params['d'] = '5/31/2014'
+        params['pt'] = '-1'
+        params['cn'] = cn
+        params['dt'] = 'ALL DOCUMENT TYPES'
+        params['st'] = 'casenumber'
+        params['ss'] = 'ALL DOCUMENT TYPES'
+        return search_endpoint + urllib.parse.urlencode(params)
 
     @staticmethod
     def get_items_to_use(all_items):
@@ -984,7 +987,7 @@ class Jac(object):
                     break
                 except requests.exceptions.Timeout as e:
                     logging.error("exception: " + str(e))
-        sheet_builder = XlBuilder(sheet_name)
+        sheet_builder = XlBuilder(sheet_name, self.time_infra)
         dataset = sheet_builder.add_sheet(mrs)
         return dataset
 
