@@ -107,14 +107,14 @@ class XlBuilder(object):
         params = OrderedDict()
         params['bd'] = '1/1/1981'
         params['ed'] = '5/31/2014'
-        params['n'] = urllib.parse.quote(name)
+        params['n'] = name
         params['bt'] = 'OR'
         params['d'] = '2/5/2015'
         params['pt'] = '-1'
         params['cn'] = ''
-        params['dt'] = 'ALL%20DOCUMENT%20TYPES'
+        params['dt'] = 'ALL DOCUMENT TYPES'
         params['st'] = 'fullname'
-        params['ss'] = 'ALL%20DOCUMENT%20TYPES'
+        params['ss'] = 'ALL DOCUMENT TYPES'
         return search_endpoint + urllib.parse.urlencode(params)
 
     @staticmethod
