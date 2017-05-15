@@ -2,14 +2,14 @@ import sys
 
 from app import Jac
 from infra import BclerkEfactsInfrastructure, ForeclosuresInfrastructure, EmailInfrastructure, ZipInfrastructure, \
-    TimeInfrastructure
+    TimeInfrastructure, ExcelFactory
 from infra import FileSystemInfrastructure, BclerkPublicRecordsInfrastructure, BcpaoInfrastructure, TaxesInfrastructure
 
 
 def main():
     jac = Jac(EmailInfrastructure(), ForeclosuresInfrastructure(), FileSystemInfrastructure(),
               BclerkEfactsInfrastructure(), BclerkPublicRecordsInfrastructure(), TaxesInfrastructure(),
-              BcpaoInfrastructure(), ZipInfrastructure(), TimeInfrastructure())
+              BcpaoInfrastructure(), ZipInfrastructure(), TimeInfrastructure(), ExcelFactory())
 
     def my_filter(arg0):
         # return arg0['count'] == 5

@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 
 import requests
 from bs4 import BeautifulSoup
-from xlwt import Workbook, easyxf, Formula
+from xlwt import easyxf, Formula
 
 
 class Item(object):
@@ -960,7 +960,8 @@ class Foreclosures(object):
 
 class Jac(object):
     def __init__(self, email_infra=None, fore_infra=None, file_system_infra=None, bclerk_efacts_infra=None,
-                 bcpr_infra=None, taxes_infra=None, bcpao_infra=None, zip_infra=None, time_infra=None):
+                 bcpr_infra=None, taxes_infra=None, bcpao_infra=None, zip_infra=None, time_infra=None,
+                 excel_infra=None):
         self.legal = None
         self.legals = None
         self.email_infra = email_infra
@@ -972,6 +973,7 @@ class Jac(object):
         self.bcpao_infra = bcpao_infra
         self.zip_infra = zip_infra
         self.time_infra = time_infra
+        self.excel_infra = excel_infra
         self.my_filter = None
         logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
@@ -1104,7 +1106,7 @@ class Jac(object):
             filter_by_dates.set_dates([date_str])
             sheet_name = date_str.strftime("%m-%d")
             single_date_item_sets.append({'dataset_title': sheet_name, 'items': filter_by_dates.apply(mrs)})
-        self.create_workbook_from_item_sets(filename, out_dir, single_date_item_sets)
+        self.create_workbook_from_item_sets(filename, out_dir, single_date_item_sets, self.excel_infra.get_a_book())
         body = self.get_email_body(run_tag, date_counts, filename, mrs)
         file_paths = [(out_dir + '/' + filename)]
         if args.zip:
@@ -1119,7 +1121,7 @@ class Jac(object):
         logging.info('END')
         return 0
 
-    def create_workbook_from_item_sets(self, filename, out_dir, single_date_item_sets):
+    def create_workbook_from_item_sets(self, filename, out_dir, single_date_item_sets, book):
         datasets = []
         for single_date_item_set in single_date_item_sets:
             sheet_name = single_date_item_set['dataset_title']
@@ -1133,7 +1135,6 @@ class Jac(object):
             logging.info('sheet fetch complete')
             logging.info('sheet num records: ' + str(len(mrs_for_one_day)))
             datasets.append(dataset)
-        book = Workbook()
         for dataset in datasets:
             Xl().add_data_set_sheet(dataset, book)
         book.save(out_dir + '/' + filename)

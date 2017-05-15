@@ -13,6 +13,7 @@ from email.utils import COMMASPACE, formatdate
 
 import requests
 from robobrowser import RoboBrowser
+from xlwt import Workbook
 
 
 class ForeclosuresInfrastructure(object):
@@ -151,3 +152,8 @@ class TimeInfrastructure(object):
 
     def get_today(self):
         return date.today()
+
+
+class ExcelFactory(object):
+    def get_a_book(self):
+        return Workbook()

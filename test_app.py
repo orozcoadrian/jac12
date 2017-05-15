@@ -559,7 +559,19 @@ class MyTestCase(unittest.TestCase):
         stub_zip = StubZip()
         stub_zip.do_zip = MagicMock(return_value='test_zip_path')
 
-        Jac(stub_email, stub_fore_infra, sfi, None, None, None, None, stub_zip, stub_time).go2(
+        class StubExcel(object):
+            pass
+
+        class StubBook(object):
+            pass
+
+        stub_xl = StubExcel()
+        mocked_book = StubBook()
+        mocked_book.add_sheet = MagicMock()
+        mocked_book.save = MagicMock()
+        stub_xl.get_a_book = MagicMock(return_value=mocked_book)
+
+        Jac(stub_email, stub_fore_infra, sfi, None, None, None, None, stub_zip, stub_time, stub_xl).go2(
             argparse.Namespace(zip=True, email=True, passw='test_pass'))
         calls = [call('outputs/2017-05-13__19-54-16'),
                  call('outputs/2017-05-13__19-54-16/11-23/html_files', exist_ok=True),
@@ -572,6 +584,8 @@ class MyTestCase(unittest.TestCase):
                                                      ['outputs/2017-05-13__19-54-16/11.23.16.xls', 'test_zip_path'],
                                                      'smtp.gmail.com:587')
         stub_zip.do_zip.assert_called_once_with('outputs/2017-05-13__19-54-16', 'outputs', '11.23.16')
+        stub_xl.get_a_book.assert_called_once_with()
+        mocked_book.save.assert_called_once_with('outputs/2017-05-13__19-54-16/11.23.16.xls')
 
 
 if __name__ == '__main__':
