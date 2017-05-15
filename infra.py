@@ -5,6 +5,7 @@ import shutil
 import smtplib
 import time
 import zipfile
+from datetime import date
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -147,3 +148,6 @@ class TimeInfrastructure(object):
     @staticmethod
     def time_strftime(fmt):
         return time.strftime(fmt)
+
+    def get_today(self):
+        return date.today()

@@ -545,10 +545,23 @@ class MyTestCase(unittest.TestCase):
         stub_time.time = MagicMock()
         stub_time.time.side_effect = [3, 5]  # list of values to return on each call
         stub_time.time_strftime = MagicMock(return_value='2017-05-13__19-54-16')
+        stub_time.get_today = MagicMock(return_value=date(2016, 11, 22))
 
-        Jac(None, stub_fore_infra, sfi, None, None, None, None, None, stub_time).go2(
-            argparse.Namespace(zip=False, email=False))
+        class StubEmailInfra(object):
+            pass
+
+        stub_email = StubEmailInfra()
+        stub_email.send_mail = MagicMock()
+
+        Jac(stub_email, stub_fore_infra, sfi, None, None, None, None, None, stub_time).go2(
+            argparse.Namespace(zip=False, email=True, passw='test_pass'))
         sfi.do_mkdirs.assert_called_once_with('outputs/2017-05-13__19-54-16')
+        stub_email.send_mail.assert_called_once_with('orozcoadrian', 'test_pass', 'orozcoadrian@gmail.com',
+                                                     ['orozcoadrian@gmail.com', 'spacecoastmarketing@gmail.com'],
+                                                     '[jac biweekly report] for: 11.23.16',
+                                                     'this result is for: 11.23.16<br>total records: 0<br><br>the following summarizes how many not-cancelled items there are per month in the <a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> as of now: <br>{}<br><br>11.23.16.xls',
+                                                     ['outputs/2017-05-13__19-54-16/11.23.16.xls'],
+                                                     'smtp.gmail.com:587')
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ import re
 import sys
 import urllib.parse
 from collections import OrderedDict
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 
 import requests
 from bs4 import BeautifulSoup
@@ -1078,10 +1078,10 @@ class Jac(object):
         start = self.time_infra.time()
         logging.debug('jac starting')
         logging.info('args: ' + str(args))
-        dates = MyDate().get_next_dates(date.today())
+        dates = MyDate().get_next_dates(self.time_infra.get_today())
         s = Foreclosures(self.fore_infra)
         mrs = s.get_items()
-        timestamp = self.time_infra.time_strftime('%Y-%m-%d__%H-%M-%S')  # time.strftime("%Y-%m-%d__%H-%M-%S")
+        timestamp = self.time_infra.time_strftime('%Y-%m-%d__%H-%M-%S')
         all_foreclosures = mrs[:]
         date_counts = self.get_non_cancelled_nums(all_foreclosures)
         logging.info(dates)
