@@ -562,8 +562,8 @@ class MyTestCase(unittest.TestCase):
         Jac(stub_email, stub_fore_infra, sfi, None, None, None, None, stub_zip, stub_time).go2(
             argparse.Namespace(zip=True, email=True, passw='test_pass'))
         calls = [call('outputs/2017-05-13__19-54-16'),
-                 call('outputs/2017-05-13__19-54-16/11-23/html_files'),
-                 call('outputs/2017-05-13__19-54-16/11-30/html_files')]
+                 call('outputs/2017-05-13__19-54-16/11-23/html_files', exist_ok=True),
+                 call('outputs/2017-05-13__19-54-16/11-30/html_files', exist_ok=True)]
         sfi.do_mkdirs.assert_has_calls(calls)
         stub_email.send_mail.assert_called_once_with('orozcoadrian', 'test_pass', 'orozcoadrian@gmail.com',
                                                      ['orozcoadrian@gmail.com', 'spacecoastmarketing@gmail.com'],
