@@ -413,16 +413,27 @@ class MyTestCase(unittest.TestCase):
                 'legal': {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
                           'r': '36', 'subd': ' WYNDHAM AT DURAN',
                           'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH',
-                          't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'}
+                          't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'},
+               {'case_number': '05-2008-CA-044444-XXXX-XX',
+                'taxes_url': 'https://brevard.county-taxes.com/public/real_estate/parcels/2627712',
+                'comment': '\xa0', 'taxes_value': '0', 'legals': [],
+                'foreclosure_sale_date': '2017-04-26',
+                'orig_mtg_link': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7Ba4EeWT71ewgv3amjxLBw==&theKey=TIbbOCD+TFEA1or3NprKhA==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
+                'orig_mtg_tag': 'OR MTG',
+                'latest_amount_due': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=kXZYtPY5nJxqhnchAd/gow==&theKey=NN73L3AVCXFc+xj6fiV/lg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
+                'count': 4,
+                'legal': None, 'case_title': 'BANK NEW YORK VS W COOK'}
                ]
         ret = Jac().get_email_body('test_abc', 'test_date_counts', 'test_filename', mrs)
         print(ret)
         self.assertEquals(
-            'this result is for: test_abc<br>total records: 3<br><br>the following summarizes how many not-cancelled items there are per month in the <a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> as of now: <br>test_date_counts<br><br>test_filename\n\n<br><br>could not get addresses for the following: <br>\n'
+            'this result is for: test_abc<br>total records: 4<br><br>the following summarizes how many not-cancelled items there are per month in the <a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> as of now: <br>test_date_counts<br><br>test_filename\n\n<br><br>could not get addresses for the following: <br>\n'
             'count_id: 2, 05-2008-CA-033222-XXXX-XX<br>\n'
             '  "LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH"<br>\n'
             'count_id: 3, 05-2008-CA-033333-XXXX-XX<br>\n'
-            '  "LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH"'
+            '  "LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH"<br>\n'
+            'count_id: 4, 05-2008-CA-044444-XXXX-XX<br>\n'
+            'None'
             , ret)
 
     def test_bcpao_get_bcpao_searches(self):

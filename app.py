@@ -1163,8 +1163,7 @@ class Jac(object):
                 for l in x['legals']:
                     if 'legal_desc' in l:
                         legal_str = '<br>\n  "' + l['legal_desc'] + '"'
-            if legal_str is not None:
-                ids.append(id_to_show + legal_str)
+            ids.append(id_to_show + str(legal_str))
         no_addr_str = ''
         if len(ids) > 0:
             no_addr_str = "\n\n<br><br>could not get addresses for the following: <br>\n" + '<br>\n'.join(ids)
