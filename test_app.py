@@ -3,7 +3,7 @@ import pprint
 import unittest
 from collections import OrderedDict
 from datetime import date
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 from xlwt import Formula
 
@@ -553,15 +553,25 @@ class MyTestCase(unittest.TestCase):
         stub_email = StubEmailInfra()
         stub_email.send_mail = MagicMock()
 
-        Jac(stub_email, stub_fore_infra, sfi, None, None, None, None, None, stub_time).go2(
-            argparse.Namespace(zip=False, email=True, passw='test_pass'))
-        sfi.do_mkdirs.assert_called_once_with('outputs/2017-05-13__19-54-16')
+        class StubZip(object):
+            pass
+
+        stub_zip = StubZip()
+        stub_zip.do_zip = MagicMock(return_value='test_zip_path')
+
+        Jac(stub_email, stub_fore_infra, sfi, None, None, None, None, stub_zip, stub_time).go2(
+            argparse.Namespace(zip=True, email=True, passw='test_pass'))
+        calls = [call('outputs/2017-05-13__19-54-16'),
+                 call('outputs/2017-05-13__19-54-16/11-23/html_files'),
+                 call('outputs/2017-05-13__19-54-16/11-30/html_files')]
+        sfi.do_mkdirs.assert_has_calls(calls)
         stub_email.send_mail.assert_called_once_with('orozcoadrian', 'test_pass', 'orozcoadrian@gmail.com',
                                                      ['orozcoadrian@gmail.com', 'spacecoastmarketing@gmail.com'],
                                                      '[jac biweekly report] for: 11.23.16',
                                                      'this result is for: 11.23.16<br>total records: 0<br><br>the following summarizes how many not-cancelled items there are per month in the <a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> as of now: <br>{}<br><br>11.23.16.xls',
-                                                     ['outputs/2017-05-13__19-54-16/11.23.16.xls'],
+                                                     ['outputs/2017-05-13__19-54-16/11.23.16.xls', 'test_zip_path'],
                                                      'smtp.gmail.com:587')
+        stub_zip.do_zip.assert_called_once_with('outputs/2017-05-13__19-54-16', 'outputs', '11.23.16')
 
 
 if __name__ == '__main__':
