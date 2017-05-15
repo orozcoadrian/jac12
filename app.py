@@ -577,17 +577,23 @@ class Bcpao(object):
                 logger.info('START')
             sub, lot, block, pb, pg, s, t, r, subid = legal
             sub = sub.replace(u'\xc2', u'').encode('utf-8')
-            url2 = 'https://www.bcpao.us/api/v1/search?'
+            bcpao_endpoint = 'https://www.bcpao.us/api/v1/search?'
+            params = OrderedDict()
             if lot is not None:
-                url2 += 'lot=' + str(lot)
+                params['lot'] = str(lot)
             if block is not None:
-                url2 += '&blk=' + str(block)
+                params['blk'] = str(block)
             if pb is not None:
-                url2 += '&platbook=' + str(pb)
+                params['platbook'] = str(pb)
             if pg is not None:
-                url2 += '&platpage=' + str(pg)
-            url2 += '&subname=' + urllib.parse.quote(sub)
-            url2 += '&activeonly=true&size=10&page=1'
+                params['platpage'] = str(pg)
+
+            params['subname'] = sub
+            params['activeonly'] = 'true'
+            params['size'] = '10'
+            params['page'] = '1'
+            url2 = bcpao_endpoint + urllib.parse.urlencode(params)
+
             ret = {'url2': url2, 'headers': {'Accept': 'application/json'}}
         return ret
 
@@ -747,14 +753,15 @@ class BclerkEfacts(object):
 
     @staticmethod
     def get_data(year, court_type, seq_number):
-        ret = 'CaseNumber1=05&'
-        ret += 'CaseNumber2=' + year + '&'
-        ret += 'CaseNumber3=' + court_type + '&'
-        ret += 'CaseNumber4=' + seq_number + '&'
-        ret += 'CaseNumber5=&'
-        ret += 'CaseNumber6=&'
-        ret += 'submit=Submit'
-        return ret
+        params = OrderedDict()
+        params['CaseNumber1'] = '05'
+        params['CaseNumber2'] = year
+        params['CaseNumber3'] = court_type
+        params['CaseNumber4'] = seq_number
+        params['CaseNumber5'] = ''
+        params['CaseNumber6'] = ''
+        params['submit'] = 'Submit'
+        return urllib.parse.urlencode(params)
 
     @staticmethod
     def get_lad_url_from_grid2(g, a_pattern):
