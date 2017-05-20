@@ -1126,7 +1126,7 @@ class Jac(object):
         for single_date_item_set in single_date_item_sets:
             sheet_name = single_date_item_set['dataset_title']
             out_dir_htm = out_dir + '/' + sheet_name + '/html_files'
-            self.file_system_infra.do_mkdirs(out_dir_htm, exist_ok=True)
+            self.file_system_infra.do_mkdirs(out_dir_htm)
 
             mrs_for_one_day = single_date_item_set['items']
             logging.info('**get_dataset: ' + sheet_name)

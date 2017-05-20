@@ -37,8 +37,8 @@ class FileSystemInfrastructure(object):
                 handle.write(bl)
 
     @staticmethod
-    def do_mkdirs(out_dir, exist_ok=False):
-        os.makedirs(out_dir, exist_ok)
+    def do_mkdirs(out_dir):
+        os.makedirs(out_dir)
 
 
 class BclerkPublicRecordsInfrastructure(object):
