@@ -202,8 +202,12 @@ class XlBuilder(object):
             if 'zip' in h.get_display():
                 value_to_use = Cell.from_display('')
                 zip_str = self.try_get(i, 'bcpao_item', 'zip_code')
-                if zip_str:
-                    value_to_use = Cell.from_display(int(zip_str))
+                try:
+                    if zip_str:
+                        value_to_use = Cell.from_display(int(zip_str))
+                except ValueError as e:
+                    value_to_use = Cell.from_display(zip_str)
+                    logging.debug(' '.join(['********exception******', str(e)]))
                 row.append(value_to_use)
             if 'owed_link' == h.get_display():
                 if 'latest_amount_due' in i:
