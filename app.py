@@ -80,9 +80,6 @@ class XlBuilder(object):
                 print("error parsing i['bcpao_item']['year built']='" + i['bcpao_item']['year built'] + "' as an int")
         return the_str3
 
-    def get_reg_actions_link(self, i):
-        return self.get_sheet_name() + '/html_files/' + Item.get_id2_from_item(i) + '_reg_actions.htm'
-
     def get_case_info_link(self, i):
         return self.get_sheet_name() + '/html_files/' + Item.get_id2_from_item(i) + '_case_info.htm'
 
@@ -148,7 +145,6 @@ class XlBuilder(object):
                        Cell.from_display("case_title", width=10000),
                        Cell.from_display("fc._sale_date", width=3000),
                        Cell.from_link("case_info", 'https://vweb1.brevardclerk.us/facts/caseno.cfm'),
-                       Cell.from_link("reg_actions", 'https://vweb1.brevardclerk.us/facts/caseno.cfm'),
                        Cell.from_display("count"),
                        Cell.from_display("address", width=10000),
                        Cell.from_display("zip"),
@@ -219,9 +215,6 @@ class XlBuilder(object):
             if 'case_info' in h.get_display():
                 link_str = self.get_case_info_link(i)
                 row.append(Cell.from_link('case_info', link_str))
-            if 'reg_actions' in h.get_display():
-                link_str2 = self.get_reg_actions_link(i)
-                row.append(Cell.from_link('reg_actions', link_str2))
             if 'liens-name' in h.get_display():
                 value_to_use = Cell.from_display('')
                 name_combos = BclerkPublicRecords().get_name_combos(r)
