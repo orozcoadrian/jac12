@@ -1,5 +1,4 @@
 import email
-import logging
 import os
 import shutil
 import smtplib
@@ -86,15 +85,11 @@ class BcpaoInfrastructure(object):
         self.s = requests.session()
 
     def get_res_from_req(self, req):
-        logging.debug('***** before requests.get 1')
         ret = self.s.get(req['url'], headers=req['headers'], timeout=10)
-        logging.debug('*** after')
         return ret
 
     def get_acct_by_legal_resp_from_req(self, url2, headers):
-        logging.debug('***** before requests.get 2')
         ret = self.s.get(url2, headers=headers, timeout=10)  # timeout in seconds
-        logging.debug('*** after')
         return ret
 
 
