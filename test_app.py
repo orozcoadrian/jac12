@@ -344,11 +344,77 @@ class MyTestCase(unittest.TestCase):
                                                         'case_title': 'BANK NEW YORK VS W COOK'}
                                                        ])
         Xl().add_data_set_sheet2(ds, tsheet)
-        self.assertEqual(str(tsheet.get_rows()), "{"
-                                                 "0: TestRow({0: 'high', 1: 'win', 2: 'HYPERLINK(\"http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html\";\"case_number\")', 3: 'case_title', 4: 'fc._sale_date', 5: 'HYPERLINK(\"https://vmatrix1.brevardclerk.us/beca/CaseNumber_Search.cfm\";\"beca_case\")', 6: 'count', 7: 'address', 8: 'zip', 9: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx\";\"liens-name\")', 10: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch\";\"bcpao\")', 11: 'f_code', 12: 'owed_link', 13: 'owed', 14: 'assessed', 15: 'base_area', 16: 'year built', 17: 'owed - ass', 18: 'orig_mtg', 19: 'taxes'}), "
-                                                 "1: TestRow({0: '', 1: '', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"beca_case\")', 6: '2', 7: '2778 WYNDHAM WAY MELBOURNE FL 32940', 8: '32940', 9: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 10: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 11: 'MASNRYCONC, WOOD FRAME', 12: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 13: '', 14: '943700.0', 15: '4441.0', 16: '2007', 17: 'IF(AND(NOT(ISBLANK(O2)),NOT(ISBLANK(P2))), O2-P2, \"\")', 18: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 19: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'}), "
-                                                 "2: TestRow({0: '', 1: 'CANCELLED', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"beca_case\")', 6: '2', 7: '', 8: '32940', 9: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 10: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 11: 'MASNRYCONC, WOOD FRAME', 12: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 13: '', 14: '943700.0', 15: '4441.0', 16: '2007', 17: 'IF(AND(NOT(ISBLANK(O3)),NOT(ISBLANK(P3))), O3-P3, \"\")', 18: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 19: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'})"
-                                                  "}")
+        self.assertEqual(tsheet.get_rows()[0].data[0], 'high')
+        self.assertEqual(tsheet.get_rows()[0].data[1], 'win')
+        self.assertEqual(tsheet.get_rows()[0].data[2],
+                         'HYPERLINK("http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html";"case_number")')
+        actuals = [value for key, value in tsheet.get_rows()[0].data.items()]
+        self.assertEqual(actuals, ['high',
+                                   'win',
+                                   'HYPERLINK("http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html";"case_number")',
+                                   'case_title',
+                                   'fc._sale_date',
+                                   'HYPERLINK("https://vmatrix1.brevardclerk.us/beca/CaseNumber_Search.cfm";"beca_case")',
+                                   'count',
+                                   'address',
+                                   'zip',
+                                   'HYPERLINK("http://web1.brevardclerk.us/oncoreweb/search.aspx";"liens-name")',
+                                   'HYPERLINK("https://www.bcpao.us/PropertySearch";"bcpao")',
+                                   'f_code',
+                                   'owed_link',
+                                   'owed',
+                                   'assessed',
+                                   'base_area',
+                                   'year built',
+                                   'owed - ass',
+                                   'orig_mtg',
+                                   'taxes'])
+        actuals = [value for key, value in tsheet.get_rows()[1].data.items()]
+        self.assertEqual(actuals, ['',
+                                   '',
+                                   'HYPERLINK("http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES";"05-2008-CA-033772-")',
+                                   'BANK NEW YORK VS W COOK',
+                                   '2017-04-26',
+                                   'HYPERLINK("a_name/html_files/2008_CA_033772_case_info.htm";"beca_case")',
+                                   '2',
+                                   '2778 WYNDHAM WAY MELBOURNE FL 32940',
+                                   '32940',
+                                   'HYPERLINK("http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES";"COOK, '
+                                   'W")',
+                                   'HYPERLINK("https://www.bcpao.us/PropertySearch/#/parcel/2627712";"2627712")',
+                                   'MASNRYCONC, WOOD FRAME',
+                                   'HYPERLINK("http://199.241.8.22xqhnLZXlXUw==&uid=999999997";"link")',
+                                   '',
+                                   '943700.0',
+                                   '4441.0',
+                                   '2007',
+                                   'IF(AND(NOT(ISBLANK(O2)),NOT(ISBLANK(P2))), O2-P2, "")',
+                                   'HYPERLINK("http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997";"OR '
+                                   'MTG")',
+                                   'HYPERLINK("https://brevard.county-taxes.com/pubte/parcels/2627712";"0")'])
+        actuals = [value for key, value in tsheet.get_rows()[2].data.items()]
+        self.assertEqual(actuals, ['',
+                                   'CANCELLED',
+                                   'HYPERLINK("http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES";"05-2008-CA-033772-")',
+                                   'BANK NEW YORK VS W COOK',
+                                   '2017-04-26',
+                                   'HYPERLINK("a_name/html_files/2008_CA_033772_case_info.htm";"beca_case")',
+                                   '2',
+                                   '',
+                                   '32940',
+                                   'HYPERLINK("http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES";"COOK, '
+                                   'W")',
+                                   'HYPERLINK("https://www.bcpao.us/PropertySearch/#/parcel/2627712";"2627712")',
+                                   'MASNRYCONC, WOOD FRAME',
+                                   'HYPERLINK("http://199.241.8.22xqhnLZXlXUw==&uid=999999997";"link")',
+                                   '',
+                                   '943700.0',
+                                   '4441.0',
+                                   '2007',
+                                   'IF(AND(NOT(ISBLANK(O3)),NOT(ISBLANK(P3))), O3-P3, "")',
+                                   'HYPERLINK("http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997";"OR '
+                                   'MTG")',
+                                   'HYPERLINK("https://brevard.county-taxes.com/pubte/parcels/2627712";"0")'])
 
     def test_foreclosures_add_foreclosures(self):
         ret = Foreclosures.add_foreclosures(['papua', 'new', 'guinea'], 2)
