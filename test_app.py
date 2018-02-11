@@ -57,12 +57,12 @@ class MyTestCase(unittest.TestCase):
             {'t': '26', 'subd': ' WYNDHAM AT DURAN', 'u': None, 'r': '36', 'pb': '53',
              'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH', 'pg': '20', 'lt': '3',
              'blk': 'A', 'subid': 'UH', 's': '09'})
-        self.assertEquals(ret, {'headers': {'Accept': 'application/json'},
+        self.assertEqual(ret, {'headers': {'Accept': 'application/json'},
                                 'url2': 'https://www.bcpao.us/api/v1/search?lot=3&blk=A&platbook=53&platpage=20&subname=+WYNDHAM+AT+DURAN&activeonly=true&size=10&page=1'})
 
     def test_bcpao_get_acct_by_legal2(self):
         ret = Bcpao().get_acct_by_legal_request({'legal_desc': 'NO LAND DESCRIBED'})
-        self.assertEquals(ret, None)
+        self.assertEqual(ret, None)
 
     def test_bcpao_parse_acct_by_legal_response(self):
         with open('test_resources/bcpao_resp.json', 'r') as myfile:
@@ -114,13 +114,13 @@ class MyTestCase(unittest.TestCase):
 
     def test_bclerk_efacts_pre_cache(self):
         ret = BclerkEfacts().pre_cache('05-2008-CA-006267-XXXX-XX')
-        self.assertEquals(ret,
-                          {'year': '2008', 'seq_number': '006267', 'id2': '2008_CA_006267',
+        self.assertEqual(ret,
+                         {'year': '2008', 'seq_number': '006267', 'id2': '2008_CA_006267',
                            'court_type': 'CA'})
 
     def test_bclerk_efacts_get_request_info(self):
         ret = BclerkEfacts().get_request_info('CA', '006267', '2008')
-        self.assertEquals(ret, {'headers': {'Content-Type': 'application/x-www-form-urlencoded'},
+        self.assertEqual(ret, {'headers': {'Content-Type': 'application/x-www-form-urlencoded'},
                                 'url': 'https://vmatrix1.brevardclerk.us/beca/CaseNumber_Display.cfm',
                                 'data': OrderedDict([('CaseNumber1', '05'),
                                                      ('CaseNumber2', '2008'),
@@ -211,7 +211,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_FilterCancelled(self):
         ret = FilterCancelled().apply([dict(comment='', val=2), dict(comment='CANCELLED', val=3)])
-        self.assertEquals(ret, [{'comment': '', 'val': 2}])
+        self.assertEqual(ret, [{'comment': '', 'val': 2}])
 
     def test_FilterByDates(self):
         filter_by_dates = FilterByDates()
@@ -219,20 +219,20 @@ class MyTestCase(unittest.TestCase):
         ret = filter_by_dates.apply(
             [dict(foreclosure_sale_date=date(2017, 4, 26), val=2), dict(foreclosure_sale_date=date(2017, 4, 30), val=3),
              dict(foreclosure_sale_date=date(2017, 5, 3), val=4)])
-        self.assertEquals(ret, [{'foreclosure_sale_date': date(2017, 4, 26), 'val': 2},
-                                {'foreclosure_sale_date': date(2017, 5, 3), 'val': 4}])
+        self.assertEqual(ret, [{'foreclosure_sale_date': date(2017, 4, 26), 'val': 2},
+                               {'foreclosure_sale_date': date(2017, 5, 3), 'val': 4}])
 
     def test_get_id2(self):
-        self.assertEquals(Item.pre_cache2('05-2008-CA-006267-'), {'court_type': 'CA',
+        self.assertEqual(Item.pre_cache2('05-2008-CA-006267-'), {'court_type': 'CA',
                                                                   'id2': '2008_CA_006267',
                                                                   'seq_number': '006267', 'year': '2008'})
-        self.assertEquals(Item.pre_cache2('05-2008-CA-006267-XXXX-XX'), {'court_type': 'CA',
+        self.assertEqual(Item.pre_cache2('05-2008-CA-006267-XXXX-XX'), {'court_type': 'CA',
                                                                          'id2': '2008_CA_006267',
                                                                          'seq_number': '006267', 'year': '2008'})
 
     def test_get_legal_from_str(self):
         ret = BclerkPublicRecords.get_legal_from_str('LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH')
-        self.assertEquals(ret, {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
+        self.assertEqual(ret, {'u': None, 'pg': '20', 's': '09', 'pb': '53', 'blk': 'A', 'lt': '3',
                                 'r': '36', 'subd': ' WYNDHAM AT DURAN',
                                 'legal_desc': 'LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH',
                                 't': '26', 'subid': 'UH'})
@@ -243,7 +243,7 @@ class MyTestCase(unittest.TestCase):
         # can't just ignore them cause that might result in a different property?
         ret = BclerkPublicRecords.get_legal_from_str(
             'LT 11 BLK 3 PB 11 PG 39 WESTFIELD ESTATES SUB S 67 FT S 05 T 22 R 35 SUBID 04')
-        self.assertEquals(ret, {'blk': '3',
+        self.assertEqual(ret, {'blk': '3',
                                 'legal_desc': 'LT 11 BLK 3 PB 11 PG 39 WESTFIELD ESTATES SUB S 67 FT S 05 T '
                                               '22 R 35 SUBID 04', 'lt': '11', 'pb': '11', 'pg': '39', 'r': '35',
                                 's': '05', 'subd': ' WESTFIELD ESTATES SUB S 67 FT', 'subid': '04', 't': '22',
@@ -347,7 +347,7 @@ class MyTestCase(unittest.TestCase):
                                                         'case_title': 'BANK NEW YORK VS W COOK'}
                                                        ])
         Xl().add_data_set_sheet2(ds, tsheet)
-        self.assertEquals(str(tsheet.get_rows()), "{"
+        self.assertEqual(str(tsheet.get_rows()), "{"
                                                   "0: TestRow({0: 'high', 1: 'win', 2: 'HYPERLINK(\"http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html\";\"case_number\")', 3: 'case_title', 4: 'fc._sale_date', 5: 'HYPERLINK(\"https://vweb1.brevardclerk.us/facts/caseno.cfm\";\"case_info\")', 6: 'HYPERLINK(\"https://vweb1.brevardclerk.us/facts/caseno.cfm\";\"reg_actions\")', 7: 'count', 8: 'address', 9: 'zip', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx\";\"liens-name\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch\";\"bcpao\")', 12: 'f_code', 13: 'owed_link', 14: 'owed', 15: 'assessed', 16: 'base_area', 17: 'year built', 18: 'owed - ass', 19: 'orig_mtg', 20: 'taxes'}), "
                                                   "1: TestRow({0: '', 1: '', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '2778 WYNDHAM WAY MELBOURNE FL 32940', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(O2)),NOT(ISBLANK(P2))), O2-P2, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'}), "
                                                   "2: TestRow({0: '', 1: 'CANCELLED', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(O3)),NOT(ISBLANK(P3))), O3-P3, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'})"
@@ -355,17 +355,17 @@ class MyTestCase(unittest.TestCase):
 
     def test_foreclosures_add_foreclosures(self):
         ret = Foreclosures.add_foreclosures(['papua', 'new', 'guinea'], 2)
-        self.assertEquals(['papua', 'new'], ret)
+        self.assertEqual(['papua', 'new'], ret)
 
     def test_jac_get_dates_count_map(self):
         ret = Jac().get_dates_count_map([{'foreclosure_sale_date': date(2017, 4, 26), 'val': 2},
                                          {'foreclosure_sale_date': date(2017, 5, 3), 'val': 4}])
-        self.assertEquals({date(2017, 4, 26): 1, date(2017, 5, 3): 1}, ret)
+        self.assertEqual({date(2017, 4, 26): 1, date(2017, 5, 3): 1}, ret)
 
     def test_jac_get_non_cancelled_nums(self):
         ret = Jac().get_non_cancelled_nums([{'comment': '', 'foreclosure_sale_date': date(2017, 4, 26)},
                                             {'comment': 'CANCELLED', 'foreclosure_sale_date': date(2017, 4, 27)}])
-        self.assertEquals('{datetime.date(2017/4/26: 1}', ret)
+        self.assertEqual('{datetime.date(2017/4/26: 1}', ret)
 
     def test_jac_get_email_body(self):
         self.maxDiff = None
@@ -425,7 +425,7 @@ class MyTestCase(unittest.TestCase):
                ]
         ret = Jac().get_email_body('test_abc', 'test_date_counts', 'test_filename', mrs)
         print(ret)
-        self.assertEquals(
+        self.assertEqual(
             'this result is for: test_abc<br>total records: 4<br><br>the following summarizes how many not-cancelled items there are per month in the <a href="http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html">foreclosure sales page</a> as of now: <br>test_date_counts<br><br>test_filename\n\n<br><br>could not get addresses for the following: <br>\n'
             'count_id: 2, 05-2008-CA-033222-XXXX-XX<br>\n'
             '  "LT 3 BLK A PB 53 PG 20 WYNDHAM AT DURAN S 09 T 26 R 36 SUBID UH"<br>\n'
@@ -446,7 +446,7 @@ class MyTestCase(unittest.TestCase):
         ret = Bcpao().get_bcpao_searches(l)
         ret_reqs = [x.request for x in ret]
         pprint.pprint(ret_reqs)
-        self.assertEquals([{'endpoint': 'https://www.bcpao.us/api/v1/search?',
+        self.assertEqual([{'endpoint': 'https://www.bcpao.us/api/v1/search?',
                             'headers': {'Accept': 'application/json'},
                             'params': OrderedDict([('lot', '11'),
                                                    ('blk', '3'),
@@ -456,8 +456,8 @@ class MyTestCase(unittest.TestCase):
                                                    ('activeonly', 'true'),
                                                    ('size', '10'),
                                                    ('page', '1')]),
-                            'url2': 'https://www.bcpao.us/api/v1/search?lot=11&blk=3&platbook=12&platpage=39&subname=+WESTFIELD+ESTATES+SUB+S+67+FT&activeonly=true&size=10&page=1'},
-                           {'endpoint': 'https://www.bcpao.us/api/v1/search?',
+                           'url2': 'https://www.bcpao.us/api/v1/search?lot=11&blk=3&platbook=12&platpage=39&subname=+WESTFIELD+ESTATES+SUB+S+67+FT&activeonly=true&size=10&page=1'},
+                          {'endpoint': 'https://www.bcpao.us/api/v1/search?',
                             'headers': {'Accept': 'application/json'},
                             'params': OrderedDict([('parcel',
                                                     '22-35-05-04-3-11'),
@@ -465,14 +465,14 @@ class MyTestCase(unittest.TestCase):
                                                    ('size', '10'),
                                                    ('page', '1')]),
                             'url2': 'https://www.bcpao.us/api/v1/search?parcel=22-35-05-04-3-11&activeonly=true&size=10&page=1'}],
-                          ret_reqs)
+                         ret_reqs)
 
     def test_bcpao_get_bcpao_searches_1(self):
         l = BclerkPublicRecords.get_legal_from_str(
             'LT 15 BLK 49 PB 3 PG 35 INDIALANTIC BY THE SEA S 36 T 27 R 37 SUBID EO')
         ret = Bcpao().get_bcpao_searches(l)
         ret_reqs = [x.request for x in ret]
-        self.assertEquals([{'endpoint': 'https://www.bcpao.us/api/v1/search?',
+        self.assertEqual([{'endpoint': 'https://www.bcpao.us/api/v1/search?',
                             'headers': {'Accept': 'application/json'},
                             'params': OrderedDict([('lot', '15'),
                                                    ('blk', '49'),
@@ -482,15 +482,15 @@ class MyTestCase(unittest.TestCase):
                                                    ('activeonly', 'true'),
                                                    ('size', '10'),
                                                    ('page', '1')]),
-                            'url2': 'https://www.bcpao.us/api/v1/search?lot=15&blk=49&platbook=3&platpage=35&subname=+INDIALANTIC+BY+THE+SEA&activeonly=true&size=10&page=1'},
-                           {'endpoint': 'https://www.bcpao.us/api/v1/search?',
+                           'url2': 'https://www.bcpao.us/api/v1/search?lot=15&blk=49&platbook=3&platpage=35&subname=+INDIALANTIC+BY+THE+SEA&activeonly=true&size=10&page=1'},
+                          {'endpoint': 'https://www.bcpao.us/api/v1/search?',
                             'headers': {'Accept': 'application/json'},
                             'params': OrderedDict([('parcel', '27-37-36-EO-49-15'),
                                                    ('activeonly', 'true'),
                                                    ('size', '10'),
                                                    ('page', '1')]),
                             'url2': 'https://www.bcpao.us/api/v1/search?parcel=27-37-36-EO-49-15&activeonly=true&size=10&page=1'}],
-                          ret_reqs)
+                         ret_reqs)
 
     def test_bcpao_get_bcpao_searches_2(self):
         l = BclerkPublicRecords.get_legal_from_str(
@@ -498,7 +498,7 @@ class MyTestCase(unittest.TestCase):
         ret = Bcpao().get_bcpao_searches(l)
         ret_reqs = [x.request for x in ret]
         pprint.pprint(ret_reqs)
-        self.assertEquals([{'endpoint': 'https://www.bcpao.us/api/v1/search?',
+        self.assertEqual([{'endpoint': 'https://www.bcpao.us/api/v1/search?',
                             'headers': {'Accept': 'application/json'},
                             'params': OrderedDict([('lot', '2'),
                                                    ('platbook', '54'),
@@ -507,22 +507,22 @@ class MyTestCase(unittest.TestCase):
                                                    ('activeonly', 'true'),
                                                    ('size', '10'),
                                                    ('page', '1')]),
-                            'url2': 'https://www.bcpao.us/api/v1/search?lot=2&platbook=54&platpage=57&subname=+PARKSIDE+WEST+P.U.D.&activeonly=true&size=10&page=1'},
-                           {'endpoint': 'https://www.bcpao.us/api/v1/search?',
+                           'url2': 'https://www.bcpao.us/api/v1/search?lot=2&platbook=54&platpage=57&subname=+PARKSIDE+WEST+P.U.D.&activeonly=true&size=10&page=1'},
+                          {'endpoint': 'https://www.bcpao.us/api/v1/search?',
                             'headers': {'Accept': 'application/json'},
                             'params': OrderedDict([('parcel', '28-36-33-50-*-2'),
                                                    ('activeonly', 'true'),
                                                    ('size', '10'),
                                                    ('page', '1')]),
                             'url2': 'https://www.bcpao.us/api/v1/search?parcel=28-36-33-50-%2A-2&activeonly=true&size=10&page=1'}],
-                          ret_reqs)
+                         ret_reqs)
 
     def test_bcpao_get_bcpao_searches_3(self):
         l = BclerkPublicRecords.get_legal_from_str(
             'LT 204 PINEWOOD I & II TOWNHOMES')
         ret = Bcpao().get_bcpao_searches(l)
         ret_reqs = [x.request for x in ret]
-        self.assertEquals([None, None], ret_reqs)
+        self.assertEqual([None, None], ret_reqs)
 
     def test_jac_go(self):
         class StubForeInfra(object):
