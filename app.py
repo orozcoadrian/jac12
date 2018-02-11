@@ -144,7 +144,7 @@ class XlBuilder(object):
                                       width=5000),
                        Cell.from_display("case_title", width=10000),
                        Cell.from_display("fc._sale_date", width=3000),
-                       Cell.from_link("case_info", 'https://vweb1.brevardclerk.us/facts/caseno.cfm'),
+                       Cell.from_link("beca_case", 'https://vmatrix1.brevardclerk.us/beca/CaseNumber_Search.cfm'),
                        Cell.from_display("count"),
                        Cell.from_display("address", width=10000),
                        Cell.from_display("zip"),
@@ -212,9 +212,9 @@ class XlBuilder(object):
                     row.append(Cell.from_display(''))
             if 'owed' == h.get_display():
                 row.append(Cell.from_display(''))  # left blank to manually add the value
-            if 'case_info' in h.get_display():
+            if 'beca_case' in h.get_display():
                 link_str = self.get_case_info_link(i)
-                row.append(Cell.from_link('case_info', link_str))
+                row.append(Cell.from_link('beca_case', link_str))
             if 'liens-name' in h.get_display():
                 value_to_use = Cell.from_display('')
                 name_combos = BclerkPublicRecords().get_name_combos(r)
