@@ -5,6 +5,7 @@ import shutil
 import smtplib
 import time
 import zipfile
+from collections import OrderedDict
 from datetime import date
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
@@ -32,9 +33,18 @@ class FileSystemInfrastructure(object):
 
     @staticmethod
     def save_lines_to_file(file_path, open_mode, content_):
-        with open(file_path, open_mode) as handle:
+        with open(file_path + 'temp', open_mode) as handle:
             for bl in content_:
                 handle.write(bl)
+        with open(file_path + 'temp', 'r') as myfile:
+            content_txt = myfile.read()
+            content_txt = content_txt.replace('href="css/', 'href="https://vmatrix1.brevardclerk.us/beca/css/')
+            content_txt = content_txt.replace('src="images/', 'src="https://vmatrix1.brevardclerk.us/beca/images/')
+            content_txt = content_txt.replace("newPopup('Vor_Request",
+                                              "newPopup('https://vmatrix1.brevardclerk.us/beca/Vor_Request")
+            with open(file_path, 'w') as handle:
+                handle.write(content_txt)
+        os.remove(file_path + 'temp')
 
     @staticmethod
     def do_mkdirs(out_dir):
@@ -60,14 +70,15 @@ class BclerkEfactsInfrastructure(object):
     def __init__(self):
         self.s = requests.session()
 
-    def get_case_info_resp_from_req(self, data_, headers_, stream_, timeout_, url_):
-        r = self.s.post(url_, data_, headers=headers_,
-                        stream=stream_, timeout=timeout_)
-        return r
+    def get_case_info_resp_from_req(self, data_, headers_, url_):
+        data = OrderedDict()
+        data['RadioChk'] = 'Yes'
+        data['Submit'] = 'Submit'
+        r = self.s.post('https://vmatrix1.brevardclerk.us/beca/StartSearch.cfm',
+                        data)  # todo: see if moving this to the constructor works
 
-    def get_reg_actions_resp_from_req(self, data_, headers_, url_):
-        r = self.s.get(url_, data=data_, headers=headers_, stream=True)
-        return r.text
+        r = self.s.post(url_, data_, headers_, timeout=100)
+        return r
 
 
 class BcpaoInfrastructure(object):

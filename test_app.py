@@ -12,6 +12,9 @@ from app import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords, Bc
 
 
 class MyTestCase(unittest.TestCase):
+    def setUp(self):
+        self.maxDiff = None
+
     def test_foreclosures_request(self):
         self.assertEqual(Foreclosures().get_request_url(),
                          'http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html')
@@ -117,27 +120,23 @@ class MyTestCase(unittest.TestCase):
 
     def test_bclerk_efacts_get_request_info(self):
         ret = BclerkEfacts().get_request_info('CA', '006267', '2008')
-        self.assertEquals(ret, {'timeout': 5, 'headers': {'Content-Type': 'application/x-www-form-urlencoded',
-                                                          'Cookie': 'CFID=1550556; CFTOKEN=74317641; JSESSIONID=None'},
-                                'url': 'https://vweb1.brevardclerk.us/facts/d_caseno.cfm', 'stream': True,
-                                'data': 'CaseNumber1=05&CaseNumber2=2008&CaseNumber3=CA&CaseNumber4=006267&CaseNumber5=&CaseNumber6=&submit=Submit'})
-
-    def test_bclerk_efacts_get_reg_actions_req_info(self):
-        ret = BclerkEfacts().get_reg_actions_req_info('CA', '99AF34FAA963FD449F028397802FF0E4.cfusion', '006267',
-                                                      '2008')
-        self.assertEquals(ret, {
-            'data': 'CaseNumber1=05&CaseNumber2=2008&CaseNumber3=CA&CaseNumber4=006267&CaseNumber5=&CaseNumber6=&submit=Submit',
-            'headers': {'Cookie': 'CFID=4749086; CFTOKEN=23056266; JSESSIONID=99AF34FAA963FD449F028397802FF0E4.cfusion',
-                        'Content-Type': 'application/x-www-form-urlencoded'},
-            'url': 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm?RequestTimeout=500'})
+        self.assertEquals(ret, {'headers': {'Content-Type': 'application/x-www-form-urlencoded'},
+                                'url': 'https://vmatrix1.brevardclerk.us/beca/CaseNumber_Display.cfm',
+                                'data': OrderedDict([('CaseNumber1', '05'),
+                                                     ('CaseNumber2', '2008'),
+                                                     ('CaseNumber3', 'CA'),
+                                                     ('CaseNumber4', '006267'),
+                                                     ('CaseNumber5', ''),
+                                                     ('CaseNumber6', ''),
+                                                     ('submit', 'Search')])})
 
     def test_bclerk_efacts_get_reg_actions_parse(self):
-        with open('test_resources/bclerk_reg_response.html', 'rb') as myfile:
+        with open('test_resources/beca_case_resp.html', 'rb') as myfile:
             ret = BclerkEfacts().parse_reg_actions_response(myfile.read())
             self.assertEqual(ret,
-                             {'orig_mtg_tag': 'OR MTG',
-                              'orig_mtg_link': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=rbBXye6I4qu58q/YufJbBA==&theKey=mfLJJALQq7FewO9aj6kDPQ==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997',
-                              'latest_amount_due': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=7tioo4AAF5DuCsZjF66dIw==&theKey=14mhPOwb8DAlMYwyf4HSrg==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999997'})
+                             {'orig_mtg_tag': 'NOTICE OF FILING ORIGINAL NOTE',
+                              'orig_mtg_link': 'https://vmatrix1.brevardclerk.us/beca/https://vmatrix1.brevardclerk.us/beca/Vor_Request.cfm?Brcd_id=22902619',
+                              'latest_amount_due': 'http://199.241.8.220/ImageView/ViewImage.aspx?barcodeid=pAQDLSwHntFeUV5wddt+BA==&theKey=5mpuEJod8lGDC/4c+cWDtQ==&theIV=UGxDS2V5V1NQbENLZXlXUw==&uid=999999999'})
 
     def test_xlbuilder_with_rows(self):
         class StubTime(object):
@@ -350,8 +349,8 @@ class MyTestCase(unittest.TestCase):
         Xl().add_data_set_sheet2(ds, tsheet)
         self.assertEquals(str(tsheet.get_rows()), "{"
                                                   "0: TestRow({0: 'high', 1: 'win', 2: 'HYPERLINK(\"http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html\";\"case_number\")', 3: 'case_title', 4: 'fc._sale_date', 5: 'HYPERLINK(\"https://vweb1.brevardclerk.us/facts/caseno.cfm\";\"case_info\")', 6: 'HYPERLINK(\"https://vweb1.brevardclerk.us/facts/caseno.cfm\";\"reg_actions\")', 7: 'count', 8: 'address', 9: 'zip', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx\";\"liens-name\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch\";\"bcpao\")', 12: 'f_code', 13: 'owed_link', 14: 'owed', 15: 'assessed', 16: 'base_area', 17: 'year built', 18: 'owed - ass', 19: 'orig_mtg', 20: 'taxes'}), "
-                                                  "1: TestRow({0: '', 1: '', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '2778 WYNDHAM WAY MELBOURNE FL 32940', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(P2)),NOT(ISBLANK(Q2))), P2-Q2, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'}), "
-                                                  "2: TestRow({0: '', 1: 'CANCELLED', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(P3)),NOT(ISBLANK(Q3))), P3-Q3, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'})"
+                                                  "1: TestRow({0: '', 1: '', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '2778 WYNDHAM WAY MELBOURNE FL 32940', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(O2)),NOT(ISBLANK(P2))), O2-P2, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'}), "
+                                                  "2: TestRow({0: '', 1: 'CANCELLED', 2: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn=05-2008-CA-033772-XXXX-XX&dt=ALL+DOCUMENT+TYPES&st=casenumber&ss=ALL+DOCUMENT+TYPES\";\"05-2008-CA-033772-\")', 3: 'BANK NEW YORK VS W COOK', 4: '2017-04-26', 5: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_case_info.htm\";\"case_info\")', 6: 'HYPERLINK(\"a_name/html_files/2008_CA_033772_reg_actions.htm\";\"reg_actions\")', 7: '2', 8: '', 9: '32940', 10: 'HYPERLINK(\"http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=05%2F13%2F2017&n=COOK%2C+W&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL+DOCUMENT+TYPES&st=fullname&ss=ALL+DOCUMENT+TYPES\";\"COOK, W\")', 11: 'HYPERLINK(\"https://www.bcpao.us/PropertySearch/#/parcel/2627712\";\"2627712\")', 12: 'MASNRYCONC, WOOD FRAME', 13: 'HYPERLINK(\"http://199.241.8.22xqhnLZXlXUw==&uid=999999997\";\"link\")', 14: '', 15: '943700.0', 16: '4441.0', 17: '2007', 18: 'IF(AND(NOT(ISBLANK(O3)),NOT(ISBLANK(P3))), O3-P3, \"\")', 19: 'HYPERLINK(\"http://199.241.8.220/y=TIbbOCD+TFEA1or3NprKhA==&theIV99997\";\"OR MTG\")', 20: 'HYPERLINK(\"https://brevard.county-taxes.com/pubte/parcels/2627712\";\"0\")'})"
                                                   "}")
 
     def test_foreclosures_add_foreclosures(self):
@@ -574,8 +573,8 @@ class MyTestCase(unittest.TestCase):
         Jac(stub_email, stub_fore_infra, sfi, None, None, None, None, stub_zip, stub_time, stub_xl).go2(
             argparse.Namespace(zip=True, email=True, passw='test_pass'))
         calls = [call('outputs/2017-05-13__19-54-16'),
-                 call('outputs/2017-05-13__19-54-16/11-23/html_files', exist_ok=True),
-                 call('outputs/2017-05-13__19-54-16/11-30/html_files', exist_ok=True)]
+                 call('outputs/2017-05-13__19-54-16/11-23/html_files'),
+                 call('outputs/2017-05-13__19-54-16/11-30/html_files')]
         sfi.do_mkdirs.assert_has_calls(calls)
         stub_email.send_mail.assert_called_once_with('orozcoadrian', 'test_pass', 'orozcoadrian@gmail.com',
                                                      ['orozcoadrian@gmail.com', 'spacecoastmarketing@gmail.com'],
