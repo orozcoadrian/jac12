@@ -206,8 +206,8 @@ class XlBuilder(object):
                     logging.debug(' '.join(['********exception******', str(e)]))
                 row.append(value_to_use)
             if 'owed_link' == h.get_display():
-                if 'latest_amount_due' in i and i['latest_amount_due'] and len(i['latest_amount_due']) > 0:
-                    row.append(Cell.from_link('link', i['latest_amount_due']))
+                if 'latest_amount_due' in i and i['latest_amount_due'] and len(i['latest_amount_due']['href']) > 0:
+                    row.append(Cell.from_link(i['latest_amount_due']['title'], i['latest_amount_due']['href']))
                 else:
                     row.append(Cell.from_display(''))
             if 'owed' == h.get_display():
@@ -259,8 +259,9 @@ class XlBuilder(object):
                 f_str2 = 'IF(' + if_cond + ', ' + true_case + ', ' + false_case + ')'
                 row.append(Cell.from_formula(f_str2))
             if 'orig_mtg' == h.get_display():
-                if 'orig_mtg_link' in i and i['orig_mtg_link'] and len(i['orig_mtg_link']) > 0:
-                    row.append(Cell.from_link(i['orig_mtg_tag'], i['orig_mtg_link']))
+                if 'orig_mtg_link' in i and i['orig_mtg_link'] and len(i['orig_mtg_link']['href']) > 0:
+                    row.append(Cell.from_link(i['orig_mtg_tag'] + ' (' + i['orig_mtg_link']['title'] + ')',
+                                              i['orig_mtg_link']['href']))
                 else:
                     row.append(Cell.from_display(''))
             if 'taxes' in h.get_display():
@@ -739,7 +740,7 @@ class BclerkBeca(object):
         return 'https://vmatrix1.brevardclerk.us/beca/CaseNumber_Display.cfm'
 
     @staticmethod
-    def get_headers(cfid, cftoken, jsessionid):
+    def get_headers():
         return {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -760,13 +761,14 @@ class BclerkBeca(object):
     def get_lad_url_from_grid2(g, a_pattern):
         ret = None
         for i in g['items']:
-            if 'Description' in i and a_pattern in i['Description']:
+            if 'Description' in i and a_pattern in i['Description']['text']:
                 if i['View']:
                     ret = i['View']
                     # todo: add title as lad_tag. TITLE="View On Request" TITLE="Viewable"
-                    if 'JavaScript' in ret:
+                    if 'JavaScript' in ret['href']:
                         # "JavaScript:newPopup('Vor_Request.cfm?Brcd_id=22563578');"
-                        ret = 'https://vmatrix1.brevardclerk.us/beca/' + ret.replace("JavaScript:newPopup('",
+                        ret['href'] = 'https://vmatrix1.brevardclerk.us/beca/' + ret['href'].replace(
+                            "JavaScript:newPopup('",
                                                                                      '').replace("');", '')
                     break
         return ret
@@ -787,10 +789,10 @@ class BclerkBeca(object):
             tds = a.findAll("td")
             for c, d in enumerate(tds):
                 try:
-                    current_item[col_names[c]] = d.text
+                    current_item[col_names[c]] = {'text': d.text}
                     the_a = d.find('a')
                     if the_a:
-                        current_item[col_names[c]] = the_a['href']
+                        current_item[col_names[c]] = {'href': the_a['href'], 'title': the_a['title']}
                 except (IndexError, KeyError) as error:
                     logging.debug(' '.join(
                         ['********exception******', str(error), str(sys.exc_info()[0]), str(col_names), str(d)]))
@@ -827,12 +829,13 @@ class BclerkBeca(object):
     def get_orig_mortgage_url_from_grid2(g, a_pattern):
         ret = None
         for i in g['items']:
-            if 'Description' in i and a_pattern in i['Description']:
+            if 'Description' in i and a_pattern in i['Description']['text']:
                 if 'View' in i:
                     ret = i['View']
-                    if 'JavaScript' in ret:
+                    if 'JavaScript' in ret['href']:
                         # "JavaScript:newPopup('Vor_Request.cfm?Brcd_id=22563578');"
-                        ret = 'https://vmatrix1.brevardclerk.us/beca/' + ret.replace("JavaScript:newPopup('",
+                        ret['href'] = 'https://vmatrix1.brevardclerk.us/beca/' + ret['href'].replace(
+                            "JavaScript:newPopup('",
                                                                                      '').replace("');", '')
                     break
         return ret
@@ -845,17 +848,13 @@ class BclerkBeca(object):
 
     def fetch_case_info(self, court_type, id2, out_dir, seq_number, year):
         request_info = self.get_request_info(court_type, seq_number, year)
-        resp = dict(jsessionid='1BBC0A559AF1813CF59C42F2236FE694.cfusion')
+        resp = {}
         if request_info is not None:
             r = self.bclerk_beca_infra.get_case_info_resp_from_req(request_info['data'], request_info['headers'],
                                                                    request_info['url'])
             resp = self.parse_resp2(r)
             resp['case_info_html_filepath'] = out_dir + '/' + id2 + '_case_info.htm'
             resp['case_info_html_content'] = ContentHolder(resp['content'])
-        return resp
-
-    def fetch_reg_actions(self, r_text):
-        resp = self.parse_reg_actions_response(r_text)
         return resp
 
     def parse_reg_actions_response(self, r_text):
@@ -865,7 +864,7 @@ class BclerkBeca(object):
 
     @staticmethod
     def parse_resp2(r):
-        resp = {'content': [], 'text': r.text}  # {'jsessionid': r.cookies['JSESSIONID'], 'content': []}
+        resp = {'content': [], 'text': r.text}
         for block in r.iter_content(1024):
             if not block:
                 break
@@ -874,10 +873,8 @@ class BclerkBeca(object):
         return resp
 
     def get_request_info(self, court_type, seq_number, year):
-        cfid = '298783'
-        cftoken = 'b9955a91aeb524ce-283CEDA0-5056-B465-1F4214A14C14090D'
         url = self.get_url()
-        headers2 = self.get_headers(cfid, cftoken, None)
+        headers2 = self.get_headers()
         data = self.get_data(year, court_type, seq_number)
         request_info = {'url': url, 'data': data, 'headers': headers2}
         return request_info
@@ -996,7 +993,7 @@ class Jac(object):
                                             be['seq_number'], be['year'])
         self.file_system_infra.save_lines_to_file(be2['case_info_html_filepath'], 'wb', be2['case_info_html_content'])
 
-        bclerk_beca_info = bclerk_beca.fetch_reg_actions(be2['text'])
+        bclerk_beca_info = bclerk_beca.parse_reg_actions_response(be2['text'])
         r['latest_amount_due'] = bclerk_beca_info['latest_amount_due']
         r['orig_mtg_link'] = bclerk_beca_info['orig_mtg_link']
         r['orig_mtg_tag'] = bclerk_beca_info['orig_mtg_tag']

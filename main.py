@@ -12,7 +12,7 @@ def main():
               BcpaoInfrastructure(), ZipInfrastructure(), TimeInfrastructure(), ExcelFactory())
 
     def my_filter(arg0):
-        # return arg0['count'] == 5
+        # return arg0['count'] == 1
         return True
 
     jac.set_filter(my_filter)

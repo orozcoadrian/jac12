@@ -68,14 +68,12 @@ class BclerkPublicRecordsInfrastructure(object):
 class BclerkBecaInfrastructure(object):
     def __init__(self):
         self.s = requests.session()
-
-    def get_case_info_resp_from_req(self, data_, headers_, url_):
         data = OrderedDict()
         data['RadioChk'] = 'Yes'
         data['Submit'] = 'Submit'
-        r = self.s.post('https://vmatrix1.brevardclerk.us/beca/StartSearch.cfm',
-                        data)  # todo: see if moving this to the constructor works
+        self.s.post('https://vmatrix1.brevardclerk.us/beca/StartSearch.cfm', data)
 
+    def get_case_info_resp_from_req(self, data_, headers_, url_):
         r = self.s.post(url_, data_, headers_, timeout=100)
         return r
 
