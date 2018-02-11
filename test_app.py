@@ -164,48 +164,47 @@ class MyTestCase(unittest.TestCase):
                                                   't': '26', 'subid': 'UH'}, 'case_title': 'BANK NEW YORK VS W COOK'}])
         self.assertTrue(data_set is not None)
         header_row = data_set.get_items()[0]
-        self.assertEqual(20, len(header_row))
-        self.assertEqual('high', header_row[0].get_display())
-        self.assertEqual('win', header_row[1].get_display())
-        self.assertEqual('case_number', header_row[2].get_display())
-        self.assertEqual('case_title', header_row[3].get_display())
-        self.assertEqual('fc._sale_date', header_row[4].get_display())
-        self.assertEqual('case_info', header_row[5].get_display())
-        self.assertEqual('count', header_row[6].get_display())
-        self.assertEqual('address', header_row[7].get_display())
-        self.assertEqual('zip', header_row[8].get_display())
-        self.assertEqual('liens-name', header_row[9].get_display())
-        self.assertEqual('bcpao', header_row[10].get_display())
-        self.assertEqual('f_code', header_row[11].get_display())
-        self.assertEqual('owed_link', header_row[12].get_display())
-        self.assertEqual('owed', header_row[13].get_display())
-        self.assertEqual('assessed', header_row[14].get_display())
-        self.assertEqual('base_area', header_row[15].get_display())
-        self.assertEqual('year built', header_row[16].get_display())
-        self.assertEqual('owed - ass', header_row[17].get_display())
-        self.assertEqual('orig_mtg', header_row[18].get_display())
-        self.assertEqual('taxes', header_row[19].get_display())
+        self.assertEqual(['high',
+                          'win',
+                          'case_number',
+                          'case_title',
+                          'fc._sale_date',
+                          'case_info',
+                          'count',
+                          'address',
+                          'zip',
+                          'liens-name',
+                          'bcpao',
+                          'f_code',
+                          'owed_link',
+                          'owed',
+                          'assessed',
+                          'base_area',
+                          'year built',
+                          'owed - ass',
+                          'orig_mtg',
+                          'taxes'], [x.get_display() for x in header_row])
         first_data_row = data_set.get_items()[1]
-        self.assertEqual('', first_data_row[0].get_display())
-        self.assertEqual('\xa0', first_data_row[1].get_display())
-        self.assertEqual('05-2008-CA-033772-', first_data_row[2].get_display())
-        self.assertEqual('BANK NEW YORK VS W COOK', first_data_row[3].get_display())
-        self.assertEqual('2017-04-26', first_data_row[4].get_display())
-        self.assertEqual('case_info', first_data_row[5].get_display())
-        self.assertEqual(2, first_data_row[6].get_display())
-        self.assertEqual('2778 WYNDHAM WAY MELBOURNE FL 32940', first_data_row[7].get_display())
-        self.assertEqual(32940, first_data_row[8].get_display())
-        self.assertEqual('COOK, W', first_data_row[9].get_display())
-        self.assertEqual('2627712', first_data_row[10].get_display())
-        self.assertEqual('MASNRYCONC, WOOD FRAME', first_data_row[11].get_display())
-        self.assertEqual('link', first_data_row[12].get_display())
-        self.assertEqual('', first_data_row[13].get_display())
-        self.assertEqual(943700.0, first_data_row[14].get_display())
-        self.assertEqual(4441.0, first_data_row[15].get_display())
-        self.assertEqual(2007, first_data_row[16].get_display())
-        self.assertEqual(None, first_data_row[17].get_display())
-        self.assertEqual('OR MTG', first_data_row[18].get_display())
-        self.assertEqual('0', first_data_row[19].get_display())
+        self.assertEqual(['',
+                          '\xa0',
+                          '05-2008-CA-033772-',
+                          'BANK NEW YORK VS W COOK',
+                          '2017-04-26',
+                          'case_info',
+                          2,
+                          '2778 WYNDHAM WAY MELBOURNE FL 32940',
+                          32940,
+                          'COOK, W',
+                          '2627712',
+                          'MASNRYCONC, WOOD FRAME',
+                          'link',
+                          '',
+                          943700.0,
+                          4441.0,
+                          2007,
+                          None,
+                          'OR MTG',
+                          '0'], [x.get_display() for x in first_data_row])
 
     def test_FilterCancelled(self):
         ret = FilterCancelled().apply([dict(comment='', val=2), dict(comment='CANCELLED', val=3)])
