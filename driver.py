@@ -2,7 +2,7 @@ import datetime
 import pprint
 
 from app import Foreclosures, MyDate, Jac
-from infra import ForeclosuresInfrastructure, BclerkEfactsInfrastructure, BclerkPublicRecordsInfrastructure, \
+from infra import ForeclosuresInfrastructure, BclerkBecaInfrastructure, BclerkPublicRecordsInfrastructure, \
     TaxesInfrastructure, BcpaoInfrastructure, FileSystemInfrastructure
 
 
@@ -26,7 +26,7 @@ class JacDriver(object):
 
     def load_by_index(self, i):
         jac = Jac(None, ForeclosuresInfrastructure(), FileSystemInfrastructure(),
-                  BclerkEfactsInfrastructure(), BclerkPublicRecordsInfrastructure(), TaxesInfrastructure(),
+                  BclerkBecaInfrastructure(), BclerkPublicRecordsInfrastructure(), TaxesInfrastructure(),
                   BcpaoInfrastructure())
         print('before:')
         pprint.pprint(self.mrs[i])

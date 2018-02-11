@@ -65,7 +65,7 @@ class BclerkPublicRecordsInfrastructure(object):
         return resp_text
 
 
-class BclerkEfactsInfrastructure(object):
+class BclerkBecaInfrastructure(object):
     def __init__(self):
         self.s = requests.session()
 

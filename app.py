@@ -730,9 +730,9 @@ class ContentHolder(object):
         return iter(self.content)
 
 
-class BclerkEfacts(object):
-    def __init__(self, bclerk_efacts_infra=None):
-        self.bclerk_efacts_infra = bclerk_efacts_infra
+class BclerkBeca(object):
+    def __init__(self, bclerk_beca_infra=None):
+        self.bclerk_beca_infra = bclerk_beca_infra
 
     @staticmethod
     def get_url():
@@ -847,8 +847,8 @@ class BclerkEfacts(object):
         request_info = self.get_request_info(court_type, seq_number, year)
         resp = dict(jsessionid='1BBC0A559AF1813CF59C42F2236FE694.cfusion')
         if request_info is not None:
-            r = self.bclerk_efacts_infra.get_case_info_resp_from_req(request_info['data'], request_info['headers'],
-                                                                     request_info['url'])
+            r = self.bclerk_beca_infra.get_case_info_resp_from_req(request_info['data'], request_info['headers'],
+                                                                   request_info['url'])
             resp = self.parse_resp2(r)
             resp['case_info_html_filepath'] = out_dir + '/' + id2 + '_case_info.htm'
             resp['case_info_html_content'] = ContentHolder(resp['content'])
@@ -947,7 +947,7 @@ class Foreclosures(object):
 
 
 class Jac(object):
-    def __init__(self, email_infra=None, fore_infra=None, file_system_infra=None, bclerk_efacts_infra=None,
+    def __init__(self, email_infra=None, fore_infra=None, file_system_infra=None, bclerk_beca_infra=None,
                  bcpr_infra=None, taxes_infra=None, bcpao_infra=None, zip_infra=None, time_infra=None,
                  excel_infra=None):
         self.legal = None
@@ -955,7 +955,7 @@ class Jac(object):
         self.email_infra = email_infra
         self.fore_infra = fore_infra
         self.file_system_infra = file_system_infra
-        self.bclerk_efacts_infra = bclerk_efacts_infra
+        self.bclerk_beca_infra = bclerk_beca_infra
         self.bcpr_infra = bcpr_infra
         self.taxes_infra = taxes_infra
         self.bcpao_infra = bcpao_infra
@@ -990,16 +990,16 @@ class Jac(object):
 
     def fill_by_case_number(self, out_dir_htm, r):
         logging.info('case_number: ' + r['case_number'])
-        bclerk_efacts = BclerkEfacts(self.bclerk_efacts_infra)
-        be = bclerk_efacts.pre_cache(r['case_number'])
-        be2 = bclerk_efacts.fetch_case_info(be['court_type'], be['id2'], out_dir_htm,
+        bclerk_beca = BclerkBeca(self.bclerk_beca_infra)
+        be = bclerk_beca.pre_cache(r['case_number'])
+        be2 = bclerk_beca.fetch_case_info(be['court_type'], be['id2'], out_dir_htm,
                                             be['seq_number'], be['year'])
         self.file_system_infra.save_lines_to_file(be2['case_info_html_filepath'], 'wb', be2['case_info_html_content'])
 
-        bclerk_efacts_info = bclerk_efacts.fetch_reg_actions(be2['text'])
-        r['latest_amount_due'] = bclerk_efacts_info['latest_amount_due']
-        r['orig_mtg_link'] = bclerk_efacts_info['orig_mtg_link']
-        r['orig_mtg_tag'] = bclerk_efacts_info['orig_mtg_tag']
+        bclerk_beca_info = bclerk_beca.fetch_reg_actions(be2['text'])
+        r['latest_amount_due'] = bclerk_beca_info['latest_amount_due']
+        r['orig_mtg_link'] = bclerk_beca_info['orig_mtg_link']
+        r['orig_mtg_tag'] = bclerk_beca_info['orig_mtg_tag']
         bclerk_public_records = BclerkPublicRecords(self.bcpr_infra)
         bclerk_public_records.fetch(r['case_number'])
         r['legal'] = bclerk_public_records.legal

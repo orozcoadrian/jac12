@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, call
 
 from xlwt import Formula
 
-from app import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords, BclerkEfacts, XlBuilder, FilterCancelled, \
+from app import Foreclosures, MyDate, Jac, Taxes, Bcpao, BclerkPublicRecords, BclerkBeca, XlBuilder, FilterCancelled, \
     FilterByDates, Item, Xl
 
 
@@ -112,14 +112,14 @@ class MyTestCase(unittest.TestCase):
             ret = BclerkPublicRecords().parse_response(myfile.read())
             self.assertEqual(ret, [])
 
-    def test_bclerk_efacts_pre_cache(self):
-        ret = BclerkEfacts().pre_cache('05-2008-CA-006267-XXXX-XX')
+    def test_bclerk_beca_pre_cache(self):
+        ret = BclerkBeca().pre_cache('05-2008-CA-006267-XXXX-XX')
         self.assertEqual(ret,
                          {'year': '2008', 'seq_number': '006267', 'id2': '2008_CA_006267',
                            'court_type': 'CA'})
 
-    def test_bclerk_efacts_get_request_info(self):
-        ret = BclerkEfacts().get_request_info('CA', '006267', '2008')
+    def test_bclerk_beca_get_request_info(self):
+        ret = BclerkBeca().get_request_info('CA', '006267', '2008')
         self.assertEqual(ret, {'headers': {'Content-Type': 'application/x-www-form-urlencoded'},
                                 'url': 'https://vmatrix1.brevardclerk.us/beca/CaseNumber_Display.cfm',
                                 'data': OrderedDict([('CaseNumber1', '05'),
@@ -130,9 +130,9 @@ class MyTestCase(unittest.TestCase):
                                                      ('CaseNumber6', ''),
                                                      ('submit', 'Search')])})
 
-    def test_bclerk_efacts_get_reg_actions_parse(self):
+    def test_bclerk_beca_get_reg_actions_parse(self):
         with open('test_resources/beca_case_resp.html', 'rb') as myfile:
-            ret = BclerkEfacts().parse_reg_actions_response(myfile.read())
+            ret = BclerkBeca().parse_reg_actions_response(myfile.read())
             self.assertEqual(ret,
                              {'orig_mtg_tag': 'NOTICE OF FILING ORIGINAL NOTE',
                               'orig_mtg_link': 'https://vmatrix1.brevardclerk.us/beca/https://vmatrix1.brevardclerk.us/beca/Vor_Request.cfm?Brcd_id=22902619',
