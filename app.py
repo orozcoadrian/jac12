@@ -232,19 +232,19 @@ class XlBuilder(object):
                     to_add = ''
                     for al in all_legal_descs:
                         if 'UNIT' in al:
-                            to_add = 'UNIT'
+                            to_add = 'CONDO'
                             break
                         elif 'CONDO' in al:
                             to_add = 'CONDO'
                             break
                         elif 'BEGIN' in al:
-                            to_add = 'BEGIN'
+                            to_add = 'LAND'
                             break
                         elif 'TIME SHARE' in al:
                             to_add = 'TIME SHARE'
                             break
                         elif ' FT ' in al:
-                            to_add = 'FT'
+                            to_add = 'LAND'
                             break
                     if to_add is None:
                         to_add = ''
