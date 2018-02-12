@@ -226,7 +226,29 @@ class XlBuilder(object):
                 if 'bcpao_acc' in i and len(i['bcpao_acc']) > 0:
                     the_str = i['bcpao_acc']
                 if the_str is None:
-                    row.append(Cell.from_display(''))
+                    all_legal_descs = [i['legal']['legal_desc']]
+                    for l in i['legals']:
+                        all_legal_descs.append(l['legal_desc'])
+                    to_add = ''
+                    for al in all_legal_descs:
+                        if 'UNIT' in al:
+                            to_add = 'UNIT'
+                            break
+                        elif 'CONDO' in al:
+                            to_add = 'CONDO'
+                            break
+                        elif 'BEGIN' in al:
+                            to_add = 'BEGIN'
+                            break
+                        elif 'TIME SHARE' in al:
+                            to_add = 'TIME SHARE'
+                            break
+                        elif ' FT ' in al:
+                            to_add = 'FT'
+                            break
+                    if to_add is None:
+                        to_add = ''
+                    row.append(Cell.from_display(to_add))
                 else:
                     row.append(Cell.from_link(the_str, Bcpao.get_bcpao_query_url_by_acct(the_str)))
             if 'f_code' in h.get_display():
